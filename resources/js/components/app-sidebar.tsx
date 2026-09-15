@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Activity, BookOpen, CheckSquare, FolderGit2, History, LayoutGrid, Tags } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -19,15 +19,34 @@ import type { NavItem } from '@/types';
 
 export function AppSidebar() {
     const page = usePage();
-    const dashboardUrl = page.props.currentTeam
-        ? dashboard(page.props.currentTeam.slug)
-        : '/';
+    const currentTeamSlug = page.props.currentTeam?.slug ?? '';
+    const dashboardUrl = currentTeamSlug ? dashboard(currentTeamSlug) : '/';
 
     const mainNavItems: NavItem[] = [
         {
             title: 'Dashboard',
             href: dashboardUrl,
             icon: LayoutGrid,
+        },
+        {
+            title: 'Todos',
+            href: currentTeamSlug ? `/${currentTeamSlug}/todos` : '#',
+            icon: CheckSquare,
+        },
+        {
+            title: 'Categories',
+            href: currentTeamSlug ? `/${currentTeamSlug}/categories` : '#',
+            icon: Tags,
+        },
+        {
+            title: 'Audit Trail',
+            href: currentTeamSlug ? `/${currentTeamSlug}/activity-logs` : '#',
+            icon: History,
+        },
+        {
+            title: 'Horizon Queue',
+            href: '/horizon',
+            icon: Activity,
         },
     ];
 
