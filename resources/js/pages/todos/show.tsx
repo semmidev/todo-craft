@@ -88,9 +88,13 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
     const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
 
+    const todoId = typeof todo?.id === 'number' || typeof todo?.id === 'string'
+        ? todo.id
+        : ((todo as any)?.id?.id ?? (todo as any)?.data?.id ?? todo?.id);
+
     const handleToggleItem = (itemId: number) => {
         router.patch(
-            `/${currentTeam.slug}/todos/${todo.id}/items/${itemId}/toggle`,
+            `/${currentTeam.slug}/todos/${todoId}/items/${itemId}/toggle`,
             {},
             { preserveScroll: true },
         );
@@ -106,7 +110,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
             const attachmentKeys = uploadResults.map((res) => ({ key: res.key }));
 
             router.put(
-                `/${currentTeam.slug}/todos/${todo.id}`,
+                `/${currentTeam.slug}/todos/${todoId}`,
                 {
                     title: todo.title,
                     status: todo.status,
@@ -256,10 +260,10 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                         }
                                         className="w-full text-xs"
                                     />
-                                    {isPresignedUploading && (
+                                     {isPresignedUploading && (
                                         <div className="space-y-1">
                                             <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                                                <span>Mengunggah via Presigned URL...</span>
+                                                <span>Mengunggah berkas...</span>
                                                 <span>{progress}%</span>
                                             </div>
                                             <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
@@ -276,7 +280,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                         loading={isSubmittingUpload || isPresignedUploading}
                                         disabled={files.length === 0 || isPresignedUploading}
                                     >
-                                        Upload via Presigned URL
+                                        Upload
                                     </Button>
                                 </form>
                             )}
