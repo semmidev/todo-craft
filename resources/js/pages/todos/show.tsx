@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
@@ -16,6 +16,17 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import { formatUserDateTime } from '@/lib/date-utils';
+
+function extractId(val: any): string | number {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'number' || typeof val === 'string') return val;
+    if (typeof val === 'object') {
+        if ('id' in val) return extractId(val.id);
+        if ('value' in val) return extractId(val.value);
+        if ('data' in val) return extractId(val.data);
+    }
+    return '';
+}
 
 interface Category {
     id: number;
@@ -82,19 +93,22 @@ interface PageProps {
     };
 }
 
-export default function TodoShow({ todo, currentTeam }: PageProps) {
+export default function TodoShow(props: PageProps) {
+    const page = usePage<any>();
+    const currentTeam = props.currentTeam || page.props.currentTeam;
+    const todo = props.todo || page.props.todo;
+
+    const teamSlug = currentTeam?.slug || page.props.currentTeam?.slug || '';
+    const todoId = extractId(todo);
+
     const { uploadMultiple, isUploading: isPresignedUploading, progress } = usePresignedUpload();
     const [isUploading, setIsUploading] = useState(false);
     const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
 
-    const todoId = typeof todo?.id === 'number' || typeof todo?.id === 'string'
-        ? todo.id
-        : ((todo as any)?.id?.id ?? (todo as any)?.data?.id ?? todo?.id);
-
     const handleToggleItem = (itemId: number) => {
         router.patch(
-            `/${currentTeam.slug}/todos/${todoId}/items/${itemId}/toggle`,
+            `/${teamSlug}/todos/${todoId}/items/${itemId}/toggle`,
             {},
             { preserveScroll: true },
         );
@@ -102,7 +116,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
 
     const handleUploadFiles = async (e: FormEvent) => {
         e.preventDefault();
-        if (files.length === 0) return;
+        if (files.length === 0 || !todoId) return;
 
         setIsSubmittingUpload(true);
         try {
@@ -110,7 +124,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
             const attachmentKeys = uploadResults.map((res) => ({ key: res.key }));
 
             router.put(
-                `/${currentTeam.slug}/todos/${todoId}`,
+                `/${teamSlug}/todos/${todoId}`,
                 {
                     title: todo.title,
                     status: todo.status,
@@ -434,7 +448,7 @@ TodoShow.layout = (props: {
             title: props.todo?.title ?? 'Todo Detail',
             href:
                 props.currentTeam && props.todo
-                    ? `/${props.currentTeam.slug}/todos/${props.todo.id}`
+                    ? `/${props.currentTeam.slug}/todos/${extractId(props.todo)}`
                     : '#',
         },
     ],
