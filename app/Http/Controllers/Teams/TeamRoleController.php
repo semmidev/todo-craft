@@ -79,7 +79,7 @@ class TeamRoleController extends Controller
             $role->syncPermissions($validated['permissions']);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Role ":name" created.', ['name' => $role->name])]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Peran ":name" berhasil dibuat.', ['name' => $role->name])]);
 
         return to_route('teams.roles.index', ['team' => $team->slug]);
     }
@@ -115,7 +115,7 @@ class TeamRoleController extends Controller
 
         $role->syncPermissions($validated['permissions']);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Role ":name" updated.', ['name' => $role->name])]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Peran ":name" berhasil diperbarui.', ['name' => $role->name])]);
 
         return to_route('teams.roles.index', ['team' => $team->slug]);
     }
@@ -131,7 +131,7 @@ class TeamRoleController extends Controller
         abort_if(
             in_array($role->name, array_column(TeamRole::cases(), 'value')),
             403,
-            __('Default roles cannot be deleted.'),
+            __('Peran bawaan tidak dapat dihapus.'),
         );
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
@@ -151,7 +151,7 @@ class TeamRoleController extends Controller
 
         $role->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Role deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Peran berhasil dihapus.')]);
 
         return to_route('teams.roles.index', ['team' => $team->slug]);
     }

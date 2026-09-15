@@ -14,6 +14,7 @@ import {
 import { FormEvent, useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { formatUserDateTime } from '@/lib/date-utils';
 
 interface Category {
     id: number;
@@ -344,9 +345,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                             Date
                                         </span>
                                         <span className="font-semibold">
-                                            {new Date(
-                                                todo.due_date,
-                                            ).toLocaleString()}
+                                            {formatUserDateTime(todo.due_date)}
                                         </span>
                                     </div>
                                 )}

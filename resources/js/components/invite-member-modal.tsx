@@ -60,28 +60,28 @@ export default function InviteMemberModal({
                     {({ errors, processing }) => (
                         <>
                             <DialogHeader>
-                                <DialogTitle>Invite a team member</DialogTitle>
+                                <DialogTitle>Undang anggota tim</DialogTitle>
                                 <DialogDescription>
-                                    Send an invitation to join this team.
+                                    Kirim undangan untuk bergabung dengan tim ini.
                                 </DialogDescription>
                             </DialogHeader>
 
                             <div className="grid gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="email">Email address</Label>
+                                    <Label htmlFor="email">Alamat email</Label>
                                     <Input
                                         id="email"
                                         name="email"
                                         type="email"
                                         data-test="invite-email"
-                                        placeholder="colleague@example.com"
+                                        placeholder="rekan@example.com"
                                         required
                                     />
                                     <InputError message={errors.email} />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="role">Role</Label>
+                                    <Label htmlFor="role">Peran</Label>
                                     <Select
                                         name="role"
                                         data-test="invite-role"
@@ -93,7 +93,7 @@ export default function InviteMemberModal({
                                         }
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select a role" />
+                                            <SelectValue placeholder="Pilih peran" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {availableRoles.map((role) => (
@@ -112,7 +112,7 @@ export default function InviteMemberModal({
 
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
-                                    <Button variant="secondary">Cancel</Button>
+                                    <Button variant="secondary">Batal</Button>
                                 </DialogClose>
 
                                 <Button
@@ -120,7 +120,7 @@ export default function InviteMemberModal({
                                     data-test="invite-submit"
                                     loading={processing}
                                 >
-                                    Send invitation
+                                    Kirim undangan
                                 </Button>
                             </DialogFooter>
                         </>

@@ -5,7 +5,6 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import TeamLayout from '@/layouts/team/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'TodoCraft';
 
@@ -21,8 +20,6 @@ void createInertiaApp({
             case name === 'settings/security':
             case name === 'settings/appearance':
                 return [AppLayout, SettingsLayout];
-            case name.startsWith('teams/'):
-                return [AppLayout, TeamLayout];
             default:
                 return AppLayout;
         }

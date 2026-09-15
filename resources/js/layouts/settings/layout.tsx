@@ -11,17 +11,17 @@ import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Profil',
         href: edit(),
         icon: null,
     },
     {
-        title: 'Security',
+        title: 'Keamanan',
         href: editSecurity(),
         icon: null,
     },
     {
-        title: 'Appearance',
+        title: 'Tampilan',
         href: editAppearance(),
         icon: null,
     },
@@ -33,16 +33,16 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="space-y-6 px-4 py-6 md:px-8">
             <Heading
-                badge="Personal Account"
-                title="Account Settings"
-                description="Manage your profile, security, and appearance settings"
+                badge="Akun Pribadi"
+                title="Akun"
+                description="Kelola profil, keamanan, dan tampilan akun Anda"
             />
 
             <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12">
                 <aside className="w-full shrink-0 lg:w-56">
                     <nav
                         className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:pb-0"
-                        aria-label="Settings"
+                        aria-label="Akun"
                     >
                         {sidebarNavItems.map((item, index) => {
                             const active = isCurrentOrParentUrl(item.href);

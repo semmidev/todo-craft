@@ -65,7 +65,7 @@ class DashboardController extends Controller
                 'title' => $todo->title,
                 'status' => $todo->status,
                 'priority' => $todo->priority,
-                'due_date' => $todo->due_date?->format('Y-m-d'),
+                'due_date' => $todo->due_date?->setTimezone('UTC')->toIso8601String(),
                 'is_overdue' => $todo->due_date && $todo->due_date->isPast() && $todo->status !== 'completed',
                 'category' => $todo->category ? [
                     'id' => $todo->category->id,

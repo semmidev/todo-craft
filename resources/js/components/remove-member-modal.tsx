@@ -44,16 +44,16 @@ export default function RemoveMemberModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Remove team member</DialogTitle>
+                    <DialogTitle>Keluarkan anggota tim</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to remove{' '}
-                        <strong>{member?.name}</strong> from this team?
+                        Apakah Anda yakin ingin mengeluarkan{' '}
+                        <strong>{member?.name}</strong> dari tim ini?
                     </DialogDescription>
                 </DialogHeader>
 
                 <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="secondary">Batal</Button>
                     </DialogClose>
 
                     <Button
@@ -62,7 +62,7 @@ export default function RemoveMemberModal({
                         disabled={processing}
                         onClick={removeMember}
                     >
-                        Remove member
+                        Keluarkan anggota
                     </Button>
                 </DialogFooter>
             </DialogContent>

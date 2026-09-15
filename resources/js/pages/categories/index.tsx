@@ -71,20 +71,20 @@ export default function CategoriesIndex({
 
     return (
         <>
-            <Head title="Categories - Todo App" />
+            <Head title="Kategori - Aplikasi Todo" />
 
             <div className="w-full flex-1 space-y-8 p-6 lg:p-8">
                 <Heading
-                    badge="Task Organization"
-                    title="Todo Categories"
-                    description={`Group and organize your team tasks into visual categories for ${currentTeam.name}.`}
+                    badge="Organisasi Tugas"
+                    title="Kategori Todo"
+                    description={`Kelompokkan dan atur tugas tim Anda ke dalam kategori visual untuk ${currentTeam.name}.`}
                 >
                     <Button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="cursor-pointer"
                     >
                         <Plus className="size-4" />
-                        Create Category
+                        Buat Kategori
                     </Button>
                 </Heading>
 
@@ -92,10 +92,10 @@ export default function CategoriesIndex({
                     <div className="bg-card border-border rounded-2xl border border-dashed p-12 text-center">
                         <Tag className="text-muted-foreground mx-auto mb-4 h-12 w-12 opacity-50" />
                         <h3 className="text-lg font-semibold">
-                            No categories yet
+                            Belum ada kategori
                         </h3>
                         <p className="text-muted-foreground mt-1 text-sm">
-                            Create your first category to group your todo tasks.
+                            Buat kategori pertama Anda untuk mengelompokkan tugas todo.
                         </p>
                     </div>
                 ) : (
@@ -117,7 +117,7 @@ export default function CategoriesIndex({
                                             {cat.name}
                                         </div>
                                         <div className="text-muted-foreground text-xs">
-                                            {cat.todos_count} tasks
+                                            {cat.todos_count} tugas
                                         </div>
                                     </div>
                                 </div>
@@ -144,7 +144,7 @@ export default function CategoriesIndex({
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
                     <div className="bg-card border-border w-full max-w-md space-y-4 rounded-2xl border p-6 shadow-2xl">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold">New Category</h2>
+                            <h2 className="text-xl font-bold">Kategori Baru</h2>
                             <button
                                 onClick={() => setIsCreateModalOpen(false)}
                                 className="text-muted-foreground font-bold cursor-pointer"
@@ -159,7 +159,7 @@ export default function CategoriesIndex({
                         >
                             <div>
                                 <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Category Name *
+                                    Nama Kategori *
                                 </label>
                                 <input
                                     type="text"
@@ -168,7 +168,7 @@ export default function CategoriesIndex({
                                     onChange={(e) =>
                                         setData('name', e.target.value)
                                     }
-                                    placeholder="e.g. Design System"
+                                    placeholder="mis. Sistem Desain"
                                     className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
                                 />
                                 {errors.name && (
@@ -180,7 +180,7 @@ export default function CategoriesIndex({
 
                             <div>
                                 <label className="mb-2 block text-xs font-semibold tracking-wider uppercase">
-                                    Badge Color
+                                    Warna Lencana
                                 </label>
                                 <div className="flex items-center gap-2">
                                     {presetColors.map((c) => (
@@ -213,13 +213,13 @@ export default function CategoriesIndex({
                                     variant="secondary"
                                     onClick={() => setIsCreateModalOpen(false)}
                                 >
-                                    Cancel
+                                    Batal
                                 </Button>
                                 <Button
                                     type="submit"
                                     loading={processing}
                                 >
-                                    Save Category
+                                    Simpan Kategori
                                 </Button>
                             </div>
                         </form>
@@ -233,8 +233,8 @@ export default function CategoriesIndex({
                 onOpenChange={(open) => {
                     if (!open) setDeletingCategory(null);
                 }}
-                title="Delete Category"
-                description={`Are you sure you want to delete "${deletingCategory?.name}"? Tasks associated with this category will remain.`}
+                title="Hapus Kategori"
+                description={`Apakah Anda yakin ingin menghapus "${deletingCategory?.name}"? Tugas yang terkait dengan kategori ini akan tetap disimpan.`}
                 loading={deletingId !== null}
                 onConfirm={executeDelete}
             />
@@ -247,7 +247,7 @@ CategoriesIndex.layout = (props: {
 }) => ({
     breadcrumbs: [
         {
-            title: 'Categories',
+            title: 'Kategori',
             href: props.currentTeam
                 ? `/${props.currentTeam.slug}/categories`
                 : '#',

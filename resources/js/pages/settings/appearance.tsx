@@ -6,15 +6,15 @@ import { edit as editAppearance } from '@/routes/appearance';
 export default function Appearance() {
     return (
         <>
-            <Head title="Appearance settings" />
+            <Head title="Pengaturan Tampilan" />
 
-            <h1 className="sr-only">Appearance settings</h1>
+            <h1 className="sr-only">Pengaturan Tampilan</h1>
 
             <div className="space-y-6">
                 <Heading
-                    badge="UI & Preferences"
-                    title="Appearance Settings"
-                    description="Customize light, dark, or system theme mode for your account"
+                    badge="UI & Preferensi"
+                    title="Pengaturan Tampilan"
+                    description="Sesuaikan mode tema terang, gelap, atau sistem untuk akun Anda"
                 />
                 <AppearanceTabs />
             </div>
@@ -25,7 +25,7 @@ export default function Appearance() {
 Appearance.layout = {
     breadcrumbs: [
         {
-            title: 'Appearance settings',
+            title: 'Pengaturan Tampilan',
             href: editAppearance(),
         },
     ],

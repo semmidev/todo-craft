@@ -14,6 +14,7 @@ import {
 import { useState } from 'react';
 import Heading from '@/components/heading';
 import PendingInvitationsModal from '@/components/pending-invitations-modal';
+import { formatUserDate } from '@/lib/date-utils';
 import type { DashboardInvitation } from '@/types';
 
 interface DashboardStats {
@@ -107,7 +108,7 @@ export default function Dashboard({
 
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title="Dasbor" />
             <PendingInvitationsModal
                 invitations={pendingInvitations}
                 open={pendingInvitations.length > 0 && showInvitations}
@@ -116,9 +117,9 @@ export default function Dashboard({
 
             <div className="w-full flex-1 space-y-8 p-6 lg:p-8">
                 <Heading
-                    badge="Workspace Overview"
-                    title={`Welcome, ${auth?.user?.name || 'Member'}`}
-                    description={`Activity summary and task breakdown for ${currentTeam?.name || 'Workspace'}.`}
+                    badge="Ikhtisar Ruang Kerja"
+                    title={`Selamat datang, ${auth?.user?.name || 'Anggota'}`}
+                    description={`Ringkasan aktivitas dan rincian tugas untuk ${currentTeam?.name || 'Ruang Kerja'}.`}
                 >
                     {userPermissions.includes('todos.create') && (
                         <Link
@@ -126,7 +127,7 @@ export default function Dashboard({
                             className="inline-flex items-center gap-2 rounded-lg bg-[#121212] px-4 py-2.5 text-sm font-medium text-[#f8f8f6] shadow-sm transition-colors hover:bg-[#373734] dark:bg-[#f8f8f6] dark:text-[#121212] dark:hover:bg-[#efeeeb]"
                         >
                             <Plus className="size-4" />
-                            New Task
+                            Tugas Baru
                         </Link>
                     )}
                     {userPermissions.includes('categories.manage') && (
@@ -135,7 +136,7 @@ export default function Dashboard({
                             className="inline-flex items-center gap-2 rounded-lg border border-[#e7e6e1] bg-[#efeeeb] px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#e7e6e1] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#f8f8f6] dark:hover:bg-[#373734]"
                         >
                             <FolderKanban className="size-4" />
-                            Categories
+                            Kategori
                         </Link>
                     )}
                 </Heading>
@@ -146,7 +147,7 @@ export default function Dashboard({
                     <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                         <div className="flex items-center justify-between text-[#7b7974] dark:text-[#9c9a92]">
                             <span className="text-xs font-semibold tracking-wider uppercase">
-                                Total Tasks
+                                Total Tugas
                             </span>
                             <ListTodo className="size-4 text-[#d97757]" />
                         </div>
@@ -156,11 +157,11 @@ export default function Dashboard({
                             </span>
                             <span className="text-xs text-[#7b7974] dark:text-[#9c9a92]">
                                 ({stats.inProgressTodos + stats.pendingTodos}{' '}
-                                active)
+                                aktif)
                             </span>
                         </div>
                         <p className="mt-2 text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                            {stats.completedTodos} completed tasks
+                            {stats.completedTodos} tugas selesai
                         </p>
                     </div>
 
@@ -168,7 +169,7 @@ export default function Dashboard({
                     <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                         <div className="flex items-center justify-between text-[#7b7974] dark:text-[#9c9a92]">
                             <span className="text-xs font-semibold tracking-wider uppercase">
-                                Completion Rate
+                                Tingkat Penyelesaian
                             </span>
                             <CheckCircle2 className="size-4 text-[#d97757]" />
                         </div>
@@ -177,7 +178,7 @@ export default function Dashboard({
                                 {stats.completionRate}%
                             </span>
                             <span className="text-xs font-medium text-[#d97757]">
-                                Progress
+                                Progres
                             </span>
                         </div>
                         <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[#efeeeb] dark:bg-[#282826]">
@@ -192,7 +193,7 @@ export default function Dashboard({
                     <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                         <div className="flex items-center justify-between text-[#7b7974] dark:text-[#9c9a92]">
                             <span className="text-xs font-semibold tracking-wider uppercase">
-                                Urgent Items
+                                Tugas Mendesak
                             </span>
                             <AlertTriangle className="size-4 text-[#d97757]" />
                         </div>
@@ -202,12 +203,12 @@ export default function Dashboard({
                             </span>
                             {stats.urgentTodos > 0 && (
                                 <span className="rounded-md bg-[#d97757]/10 px-2 py-0.5 text-xs font-semibold text-[#d97757]">
-                                    Action Needed
+                                    Perlu Tindakan
                                 </span>
                             )}
                         </div>
                         <p className="mt-2 text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                            High priority tasks queued
+                            Tugas prioritas tinggi dalam antrean
                         </p>
                     </div>
 
@@ -215,7 +216,7 @@ export default function Dashboard({
                     <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                         <div className="flex items-center justify-between text-[#7b7974] dark:text-[#9c9a92]">
                             <span className="text-xs font-semibold tracking-wider uppercase">
-                                Team Members
+                                Anggota Tim
                             </span>
                             <Users className="size-4 text-[#d97757]" />
                         </div>
@@ -224,7 +225,7 @@ export default function Dashboard({
                                 {stats.membersCount}
                             </span>
                             <span className="text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                                Active
+                                Aktif
                             </span>
                         </div>
                         {userPermissions.includes('roles.manage') && (
@@ -232,7 +233,7 @@ export default function Dashboard({
                                 href={`/settings/teams/${teamSlug}/roles`}
                                 className="mt-2 block text-xs font-medium text-[#121212] underline hover:opacity-80 dark:text-[#f8f8f6]"
                             >
-                                Roles & Permissions →
+                                Peran & Izin →
                             </Link>
                         )}
                     </div>
@@ -247,10 +248,10 @@ export default function Dashboard({
                             <div className="flex items-center justify-between border-b border-[#e7e6e1] pb-4 dark:border-[#2f2f2c]">
                                 <div>
                                     <h2 className="font-serif text-xl font-normal text-[#121212] dark:text-[#f8f8f6]">
-                                        Recent Tasks
+                                        Tugas Terbaru
                                     </h2>
                                     <p className="text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                                        Latest active items in{' '}
+                                        Tugas aktif terbaru di{' '}
                                         {currentTeam?.name}
                                     </p>
                                 </div>
@@ -259,7 +260,7 @@ export default function Dashboard({
                                         href={`/${teamSlug}/todos`}
                                         className="inline-flex items-center gap-1 text-xs font-medium text-[#121212] underline hover:opacity-80 dark:text-[#f8f8f6]"
                                     >
-                                        View All
+                                        Lihat Semua
                                         <ArrowRight className="size-3.5" />
                                     </Link>
                                 )}
@@ -268,7 +269,7 @@ export default function Dashboard({
                             <div className="mt-4 divide-y divide-[#e7e6e1] dark:divide-[#2f2f2c]">
                                 {recentTodos.length === 0 ? (
                                     <div className="py-8 text-center text-sm text-[#7b7974] dark:text-[#9c9a92]">
-                                        No tasks found in this workspace.
+                                        Tidak ada tugas yang ditemukan di ruang kerja ini.
                                     </div>
                                 ) : (
                                     recentTodos.map((todo) => (
@@ -310,9 +311,11 @@ export default function Dashboard({
                                                                 className={`inline-flex items-center gap-1 ${todo.is_overdue ? 'font-semibold text-[#d97757]' : ''}`}
                                                             >
                                                                 <Clock className="size-3" />
-                                                                {todo.due_date}{' '}
+                                                                {formatUserDate(
+                                                                    todo.due_date
+                                                                )}{' '}
                                                                 {todo.is_overdue &&
-                                                                    '(Overdue)'}
+                                                                    '(Terlambat)'}
                                                             </span>
                                                         )}
                                                     </div>
@@ -333,10 +336,10 @@ export default function Dashboard({
                             <div className="flex items-center justify-between border-b border-[#e7e6e1] pb-4 dark:border-[#2f2f2c]">
                                 <div>
                                     <h2 className="font-serif text-xl font-normal text-[#121212] dark:text-[#f8f8f6]">
-                                        Categories
+                                        Kategori
                                     </h2>
                                     <p className="text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                                        Task distribution per category
+                                        Distribusi tugas per kategori
                                     </p>
                                 </div>
                                 {userPermissions.includes(
@@ -346,7 +349,7 @@ export default function Dashboard({
                                         href={`/${teamSlug}/categories`}
                                         className="text-xs font-medium text-[#121212] underline hover:opacity-80 dark:text-[#f8f8f6]"
                                     >
-                                        Manage Categories
+                                        Kelola Kategori
                                     </Link>
                                 )}
                             </div>
@@ -354,7 +357,7 @@ export default function Dashboard({
                             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 {categoriesStats.length === 0 ? (
                                     <div className="col-span-2 py-4 text-center text-sm text-[#7b7974] dark:text-[#9c9a92]">
-                                        No categories added yet.
+                                        Belum ada kategori yang ditambahkan.
                                     </div>
                                 ) : (
                                     categoriesStats.map((cat) => {
@@ -412,7 +415,7 @@ export default function Dashboard({
                         {/* Quick Navigation Card */}
                         <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                             <h2 className="border-b border-[#e7e6e1] pb-3 font-serif text-xl font-normal text-[#121212] dark:border-[#2f2f2c] dark:text-[#f8f8f6]">
-                                Quick Actions
+                                Aksi Cepat
                             </h2>
                             <div className="mt-4 flex flex-col gap-2">
                                 {userPermissions.includes('todos.view') && (
@@ -422,7 +425,7 @@ export default function Dashboard({
                                     >
                                         <span className="flex items-center gap-2">
                                             <ListTodo className="size-4 text-[#121212] dark:text-[#f8f8f6]" />
-                                            Task List & Board
+                                            Daftar & Papan Tugas
                                         </span>
                                         <ArrowRight className="size-3.5" />
                                     </Link>
@@ -436,7 +439,7 @@ export default function Dashboard({
                                     >
                                         <span className="flex items-center gap-2">
                                             <FolderKanban className="size-4 text-[#121212] dark:text-[#f8f8f6]" />
-                                            Categories
+                                            Kategori
                                         </span>
                                         <ArrowRight className="size-3.5" />
                                     </Link>
@@ -448,7 +451,7 @@ export default function Dashboard({
                                     >
                                         <span className="flex items-center gap-2">
                                             <Shield className="size-4 text-[#121212] dark:text-[#f8f8f6]" />
-                                            Roles & Permissions
+                                            Peran & Izin
                                         </span>
                                         <ArrowRight className="size-3.5" />
                                     </Link>
@@ -462,7 +465,7 @@ export default function Dashboard({
                                     >
                                         <span className="flex items-center gap-2">
                                             <ActivityIcon className="size-4 text-[#121212] dark:text-[#f8f8f6]" />
-                                            Audit Trail
+                                            Log Jejak Audit
                                         </span>
                                         <ArrowRight className="size-3.5" />
                                     </Link>
@@ -475,20 +478,20 @@ export default function Dashboard({
                             <div className="rounded-2xl border border-[#e7e6e1] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:border-[#2f2f2c] dark:bg-[#1c1c1a]">
                                 <div className="flex items-center justify-between border-b border-[#e7e6e1] pb-3 dark:border-[#2f2f2c]">
                                     <h2 className="font-serif text-xl font-normal text-[#121212] dark:text-[#f8f8f6]">
-                                        Audit Activity
+                                        Aktivitas Audit
                                     </h2>
                                     <Link
                                         href={`/${teamSlug}/activity-logs`}
                                         className="text-xs font-medium text-[#121212] underline hover:opacity-80 dark:text-[#f8f8f6]"
                                     >
-                                        View All
+                                        Lihat Semua
                                     </Link>
                                 </div>
 
                                 <div className="mt-4 space-y-4">
                                     {recentActivities.length === 0 ? (
                                         <div className="py-4 text-center text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                                            No recent activities recorded.
+                                            Belum ada aktivitas terbaru yang terekam.
                                         </div>
                                     ) : (
                                         recentActivities.map((act) => (
@@ -528,7 +531,7 @@ export default function Dashboard({
 Dashboard.layout = (props: { currentTeam?: { slug: string } | null }) => ({
     breadcrumbs: [
         {
-            title: 'Dashboard',
+            title: 'Dasbor',
             href: props.currentTeam
                 ? `/${props.currentTeam.slug}/dashboard`
                 : '/',

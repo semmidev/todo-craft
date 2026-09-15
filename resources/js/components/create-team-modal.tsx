@@ -39,21 +39,21 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
             <DialogContent>
                 <form onSubmit={submit} className="space-y-6">
                     <DialogHeader>
-                        <DialogTitle>Create a new team</DialogTitle>
+                        <DialogTitle>Buat tim baru</DialogTitle>
                         <DialogDescription>
-                            Create a new team to collaborate with others.
+                            Buat tim baru untuk berkolaborasi dengan orang lain.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Team name</Label>
+                        <Label htmlFor="name">Nama tim</Label>
                         <Input
                             id="name"
                             name="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             data-test="create-team-name"
-                            placeholder="My team"
+                            placeholder="Tim Saya"
                             required
                         />
                         <InputError message={errors.name} />
@@ -62,7 +62,7 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
                             <Button type="button" variant="secondary">
-                                Cancel
+                                Batal
                             </Button>
                         </DialogClose>
 
@@ -71,7 +71,7 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
                             data-test="create-team-submit"
                             loading={processing}
                         >
-                            Create team
+                            Buat tim
                         </Button>
                     </DialogFooter>
                 </form>

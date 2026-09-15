@@ -10,6 +10,7 @@ use App\Models\Todo;
 use App\Models\TodoItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -38,12 +39,16 @@ class TodoController extends Controller
                     });
                 }),
             )
-            ->allowedSorts('title', 'due_date', 'created_at', 'priority', 'status')
+            ->allowedSorts('title', 'due_date', 'created_at', 'priority', 'status', 'category_id', 'assigned_to_id')
             ->allowedIncludes('category', 'user', 'assignee', 'items', 'media', 'activities')
             ->defaultSort('-created_at')
             ->with(['category', 'user', 'assignee', 'items', 'media']);
 
-        $todos = $query->paginate(15)->through(fn (Todo $todo) => TodoData::fromModel($todo));
+        $perPage = min(max((int) $request->input('per_page', 15), 5), 100);
+
+        $todos = $query->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (Todo $todo) => TodoData::fromModel($todo));
 
         $categories = Category::where('team_id', $currentTeam->id)
             ->get()
@@ -68,8 +73,8 @@ class TodoController extends Controller
             'categories' => $categories,
             'teamMembers' => $teamMembers,
             'stats' => $stats,
-            'filters' => $request->get('filter', []),
-            'sort' => $request->get('sort', '-created_at'),
+            'filters' => $request->input('filter', []),
+            'sort' => $request->input('sort', '-created_at'),
         ]);
     }
 
@@ -82,6 +87,10 @@ class TodoController extends Controller
 
         $data = TodoData::validate($request->all());
 
+        $dueDate = ! empty($data['due_date'])
+            ? Carbon::parse($data['due_date'])->setTimezone('UTC')
+            : null;
+
         $todo = Todo::create([
             'team_id' => $currentTeam->id,
             'user_id' => $request->user()->id,
@@ -91,7 +100,7 @@ class TodoController extends Controller
             'description' => $data['description'] ?? null,
             'status' => $data['status'] ?? 'pending',
             'priority' => $data['priority'] ?? 'medium',
-            'due_date' => $data['due_date'] ?? null,
+            'due_date' => $dueDate,
         ]);
 
         if ($request->hasFile('attachments')) {
@@ -112,7 +121,7 @@ class TodoController extends Controller
             }
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Tugas todo berhasil dibuat.')]);
 
         return back();
     }
@@ -140,6 +149,14 @@ class TodoController extends Controller
 
         $data = TodoData::validate($request->all());
 
+        $dueDate = ! empty($data['due_date'])
+            ? Carbon::parse($data['due_date'])->setTimezone('UTC')
+            : null;
+
+        $completedAt = $data['status'] === 'completed' && ! $todo->completed_at
+            ? Carbon::now()->setTimezone('UTC')
+            : ($data['status'] !== 'completed' ? null : $todo->completed_at);
+
         $todo->update([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
@@ -147,8 +164,8 @@ class TodoController extends Controller
             'priority' => $data['priority'],
             'category_id' => $data['category_id'] ?? null,
             'assigned_to_id' => $data['assigned_to_id'] ?? null,
-            'due_date' => $data['due_date'] ?? null,
-            'completed_at' => $data['status'] === 'completed' && ! $todo->completed_at ? now() : ($data['status'] !== 'completed' ? null : $todo->completed_at),
+            'due_date' => $dueDate,
+            'completed_at' => $completedAt,
         ]);
 
         if ($request->hasFile('attachments')) {
@@ -157,7 +174,7 @@ class TodoController extends Controller
             }
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Tugas todo berhasil diperbarui.')]);
 
         return back();
     }
@@ -171,7 +188,7 @@ class TodoController extends Controller
 
         $todo->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Tugas todo berhasil dihapus.')]);
 
         return back();
     }
@@ -190,7 +207,7 @@ class TodoController extends Controller
             'completed_at' => $newStatus === 'completed' ? now() : null,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo status updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Status todo berhasil diperbarui.')]);
 
         return back();
     }
@@ -206,7 +223,7 @@ class TodoController extends Controller
             'is_completed' => ! $item->is_completed,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Checklist item updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Item daftar periksa berhasil diperbarui.')]);
 
         return back();
     }

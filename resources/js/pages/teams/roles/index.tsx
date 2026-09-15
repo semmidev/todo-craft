@@ -26,41 +26,41 @@ const PERMISSION_GROUPS: Record<
     { label: string; permissions: { id: string; label: string }[] }
 > = {
     dashboard: {
-        label: 'Dashboard & Analytics',
+        label: 'Dasbor & Analitik',
         permissions: [
-            { id: 'dashboard.view', label: 'View Team Dashboard' },
-            { id: 'admin.dashboard.access', label: 'Access Admin Dashboard' },
+            { id: 'dashboard.view', label: 'Lihat Dasbor Tim' },
+            { id: 'admin.dashboard.access', label: 'Akses Dasbor Admin' },
         ],
     },
     team: {
-        label: 'Team & Member Management',
+        label: 'Manajemen Tim & Anggota',
         permissions: [
-            { id: 'teams.update', label: 'Update Team Info' },
-            { id: 'teams.delete', label: 'Delete Team' },
-            { id: 'teams.members.manage', label: 'Manage Team Members' },
-            { id: 'teams.invitations.manage', label: 'Manage Team Invitations' },
-            { id: 'roles.manage', label: 'Manage Roles & Permissions' },
+            { id: 'teams.update', label: 'Perbarui Info Tim' },
+            { id: 'teams.delete', label: 'Hapus Tim' },
+            { id: 'teams.members.manage', label: 'Kelola Anggota Tim' },
+            { id: 'teams.invitations.manage', label: 'Kelola Undangan Tim' },
+            { id: 'roles.manage', label: 'Kelola Peran & Izin' },
         ],
     },
     todos: {
-        label: 'Todo Management',
+        label: 'Manajemen Tugas Todo',
         permissions: [
-            { id: 'todos.view', label: 'View Todos' },
-            { id: 'todos.create', label: 'Create Todos' },
-            { id: 'todos.update', label: 'Update & Toggle Todos' },
-            { id: 'todos.delete', label: 'Delete Todos' },
+            { id: 'todos.view', label: 'Lihat Todo' },
+            { id: 'todos.create', label: 'Buat Todo' },
+            { id: 'todos.update', label: 'Perbarui & Ubah Status Todo' },
+            { id: 'todos.delete', label: 'Hapus Todo' },
         ],
     },
     categories: {
-        label: 'Category Management',
+        label: 'Manajemen Kategori',
         permissions: [
-            { id: 'categories.manage', label: 'Manage Categories' },
+            { id: 'categories.manage', label: 'Kelola Kategori' },
         ],
     },
     audit: {
-        label: 'Audit Trail',
+        label: 'Jejak Audit',
         permissions: [
-            { id: 'activity_log.view', label: 'View Activity Logs' },
+            { id: 'activity_log.view', label: 'Lihat Log Aktivitas' },
         ],
     },
 };
@@ -154,20 +154,20 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
 
     return (
         <>
-            <Head title={`Team Roles - ${team.name}`} />
+            <Head title={`Peran Tim - ${team.name}`} />
 
-            <div className="space-y-8">
+            <div className="w-full flex-1 space-y-8 p-6 lg:p-8">
                 <Heading
-                    badge="Security & RBAC"
-                    title="Team Roles & Permissions"
-                    description={`Configure dynamic permissions and access controls for members in ${team.name}.`}
+                    badge="Keamanan & RBAC"
+                    title="Peran & Izin Tim"
+                    description={`Konfigurasi izin dinamis dan kontrol akses untuk anggota di ${team.name}.`}
                 >
                     <button
                         onClick={openCreateModal}
                         className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#121212] px-4 py-2.5 text-sm font-medium text-[#f8f8f6] shadow-sm transition-colors hover:bg-[#373734] active:scale-95 dark:bg-[#f8f8f6] dark:text-[#121212] dark:hover:bg-[#efeeeb]"
                     >
                         <Plus className="size-4" />
-                        Create Custom Role
+                        Buat Peran Khusus
                     </button>
                 </Heading>
 
@@ -186,11 +186,11 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                         </h2>
                                         {role.is_default ? (
                                             <span className="rounded-md border border-[#e7e6e1] bg-[#efeeeb] px-2 py-0.5 font-mono text-[11px] text-[#373734] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#9c9a92]">
-                                                System
+                                                Sistem
                                             </span>
                                         ) : (
                                             <span className="rounded-md bg-[#d97757]/10 px-2 py-0.5 font-mono text-[11px] text-[#d97757]">
-                                                Custom
+                                                Khusus
                                             </span>
                                         )}
                                     </div>
@@ -199,13 +199,13 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                 {/* Permissions Badges List */}
                                 <div className="mt-4">
                                     <span className="text-xs font-semibold tracking-wider text-[#7b7974] uppercase dark:text-[#9c9a92]">
-                                        Assigned Permissions (
+                                        Izin Terpasang (
                                         {role.permissions.length})
                                     </span>
                                     <div className="mt-2.5 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto pr-1">
                                         {role.permissions.length === 0 ? (
                                             <span className="text-xs text-[#9c9a92] italic">
-                                                No permissions assigned
+                                                Tidak ada izin yang terpasang
                                             </span>
                                         ) : (
                                             role.permissions.map((perm) => (
@@ -228,7 +228,7 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-[#e7e6e1] bg-[#f8f8f6] px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#efeeeb] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#f8f8f6] dark:hover:bg-[#373734]"
                                 >
                                     <Edit3 className="size-3.5" />
-                                    Edit Permissions
+                                    Edit Izin
                                 </button>
                                 {!role.is_default && (
                                     <button
@@ -241,7 +241,7 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                         ) : (
                                             <Trash2 className="size-3.5" />
                                         )}
-                                        Delete
+                                        Hapus
                                     </button>
                                 )}
                             </div>
@@ -258,12 +258,12 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                 <div>
                                     <h3 className="font-serif text-2xl font-normal text-[#121212] dark:text-[#f8f8f6]">
                                         {editingRole
-                                            ? `Edit Role: ${editingRole.name}`
-                                            : 'Create Custom Role'}
+                                            ? `Edit Peran: ${editingRole.name}`
+                                            : 'Buat Peran Khusus'}
                                     </h3>
                                     <p className="text-xs text-[#7b7974] dark:text-[#9c9a92]">
-                                        Toggle granular permissions for members
-                                        assigned to this role
+                                        Aktifkan/nonaktifkan izin terperinci untuk anggota
+                                        yang memiliki peran ini
                                     </p>
                                 </div>
                                 <button
@@ -282,7 +282,7 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                     {/* Role Name Input */}
                                     <div>
                                         <label className="block text-xs font-semibold tracking-wider text-[#7b7974] uppercase dark:text-[#9c9a92]">
-                                            Role Name
+                                            Nama Peran
                                         </label>
                                         <input
                                             type="text"
@@ -293,7 +293,7 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                             disabled={Boolean(
                                                 editingRole?.is_default,
                                             )}
-                                            placeholder="e.g. Designer, QA Lead"
+                                            placeholder="mis. Desainer, QA Lead"
                                             className="mt-1.5 w-full rounded-lg border border-[#b7b7b5] bg-white px-3.5 py-2.5 text-sm text-[#121212] focus:border-[#121212] focus:outline-none disabled:opacity-60 dark:border-[#373734] dark:bg-[#282826] dark:text-[#f8f8f6]"
                                         />
                                         {errors.name && (
@@ -306,7 +306,7 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                     {/* Permissions Checkbox Matrix */}
                                     <div className="space-y-4">
                                         <span className="block text-xs font-semibold tracking-wider text-[#7b7974] uppercase dark:text-[#9c9a92]">
-                                            Permissions Matrix
+                                            Matriks Izin
                                         </span>
 
                                         {Object.entries(PERMISSION_GROUPS).map(
@@ -333,8 +333,8 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                                                 className="text-xs font-medium text-[#121212] underline hover:opacity-80 dark:text-[#f8f8f6]"
                                                             >
                                                                 {allGroupSelected
-                                                                    ? 'Deselect Group'
-                                                                    : 'Select Group'}
+                                                                    ? 'Batal Pilih Semua'
+                                                                    : 'Pilih Semua'}
                                                             </button>
                                                         </div>
 
@@ -390,15 +390,15 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                                             setIsCreateModalOpen(false)
                                         }
                                     >
-                                        Cancel
+                                        Batal
                                     </Button>
                                     <Button
                                         type="submit"
                                         loading={processing}
                                     >
                                         {editingRole
-                                            ? 'Save Changes'
-                                            : 'Create Role'}
+                                            ? 'Simpan Perubahan'
+                                            : 'Buat Peran'}
                                     </Button>
                                 </div>
                             </form>
@@ -412,10 +412,10 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                 onOpenChange={(open) => {
                     if (!open) setDeletingRoleTarget(null);
                 }}
-                title="Delete Team Role"
+                title="Hapus Peran Tim"
                 description={
                     deletingRoleTarget
-                        ? `Are you sure you want to delete role "${deletingRoleTarget.name}"? Users with this role will be reassigned to Member.`
+                        ? `Apakah Anda yakin ingin menghapus peran "${deletingRoleTarget.name}"? Pengguna dengan peran ini akan dialihkan ke Anggota.`
                         : ''
                 }
                 loading={deletingId !== null}
@@ -428,13 +428,13 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
 TeamRolesIndex.layout = (props: { currentTeam?: { slug: string } | null }) => ({
     breadcrumbs: [
         {
-            title: 'Team Settings',
+            title: 'Pengaturan Tim',
             href: props.currentTeam
                 ? `/settings/teams/${props.currentTeam.slug}/edit`
                 : '#',
         },
         {
-            title: 'Roles & Permissions',
+            title: 'Peran & Izin',
             href: props.currentTeam
                 ? `/settings/teams/${props.currentTeam.slug}/roles`
                 : '#',

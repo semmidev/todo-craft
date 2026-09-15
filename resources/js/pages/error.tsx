@@ -9,21 +9,21 @@ interface Props {
 
 export default function ErrorPage({ status = 403, message }: Props) {
     const titles: Record<number, string> = {
-        403: 'Access Forbidden',
-        404: 'Page Not Found',
-        500: 'Server Error',
-        503: 'Service Unavailable',
+        403: 'Akses Ditolak',
+        404: 'Halaman Tidak Ditemukan',
+        500: 'Kesalahan Server',
+        503: 'Layanan Tidak Tersedia',
     };
 
     const descriptions: Record<number, string> = {
-        403: 'You do not have the required permissions to access this page or perform this action in this team space.',
-        404: 'The page or resource you are looking for could not be found or has been moved.',
-        500: 'An unexpected internal error occurred on our servers. Please try again in a few moments.',
-        503: 'TodoCraft is currently undergoing scheduled maintenance. Please check back shortly.',
+        403: 'Anda tidak memiliki izin yang diperlukan untuk mengakses halaman ini atau melakukan tindakan ini di ruang kerja tim.',
+        404: 'Halaman atau sumber daya yang Anda cari tidak dapat ditemukan atau telah dipindahkan.',
+        500: 'Terjadi kesalahan internal yang tidak terduga pada server kami. Silakan coba lagi beberapa saat lagi.',
+        503: 'Aplikasi sedang menjalani pemeliharaan terjadwal. Silakan periksa kembali sebentar lagi.',
     };
 
-    const title = titles[status] || 'An Error Occurred';
-    const description = message || descriptions[status] || 'Something went wrong while loading this page.';
+    const title = titles[status] || 'Terjadi Kesalahan';
+    const description = message || descriptions[status] || 'Terjadi masalah saat memuat halaman ini.';
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f8f6] p-6 text-[#121212] selection:bg-[#d97757] selection:text-white dark:bg-[#121212] dark:text-[#f8f8f6]">
@@ -38,7 +38,7 @@ export default function ErrorPage({ status = 403, message }: Props) {
 
                 {/* Status Code */}
                 <span className="mt-6 font-mono text-sm font-semibold tracking-wider text-[#d97757] uppercase">
-                    Error {status}
+                    Kesalahan {status}
                 </span>
 
                 {/* Title */}
@@ -59,20 +59,20 @@ export default function ErrorPage({ status = 403, message }: Props) {
                         className="inline-flex items-center justify-center gap-2 rounded-xl border-[#e7e6e1] bg-white px-5 py-2.5 text-sm font-medium text-[#121212] transition-transform hover:bg-[#efeeeb] active:scale-95 dark:border-[#2f2f2c] dark:bg-[#1c1c1a] dark:text-[#f8f8f6] dark:hover:bg-[#282826]"
                     >
                         <ArrowLeft className="size-4" />
-                        Go Back
+                        Kembali
                     </Button>
 
                     <Link href="/">
                         <Button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#121212] px-5 py-2.5 text-sm font-medium text-[#f8f8f6] shadow-md transition-transform hover:bg-[#373734] active:scale-95 dark:bg-[#f8f8f6] dark:text-[#121212] dark:hover:bg-[#efeeeb]">
                             <Home className="size-4" />
-                            Return Home
+                            Kembali ke Beranda
                         </Button>
                     </Link>
                 </div>
 
                 {/* Subtle Support Note */}
                 <div className="mt-12 border-t border-[#e7e6e1] pt-6 text-xs text-[#9c9a92] dark:border-[#2f2f2c]">
-                    If you believe this is a mistake, please contact your team workspace owner to request permission.
+                    Jika Anda yakin ini adalah kesalahan, silakan hubungi pemilik ruang kerja tim Anda untuk meminta izin.
                 </div>
             </div>
         </div>

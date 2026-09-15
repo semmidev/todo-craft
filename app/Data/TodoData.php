@@ -70,8 +70,8 @@ class TodoData extends Data
             priority: $todo->priority,
             category_id: $todo->category_id,
             assigned_to_id: $todo->assigned_to_id,
-            due_date: $todo->due_date?->toIso8601String(),
-            completed_at: $todo->completed_at?->toIso8601String(),
+            due_date: $todo->due_date?->setTimezone('UTC')->toIso8601String(),
+            completed_at: $todo->completed_at?->setTimezone('UTC')->toIso8601String(),
             category: $todo->category ? CategoryData::fromModel($todo->category) : null,
             creator: $todo->user ? [
                 'id' => $todo->user->id,

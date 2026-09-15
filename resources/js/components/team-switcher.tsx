@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { Check, ChevronsUpDown, Plus, Users } from 'lucide-react';
+import { toast } from 'sonner';
 import CreateTeamModal from '@/components/create-team-modal';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +26,7 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
     const teams = page.props.teams ?? [];
 
     const switchTeam = (team: Team) => {
+        if (currentTeam?.id === team.id) return;
         const previousTeamSlug = currentTeam?.slug;
 
         router.post(
@@ -32,6 +34,7 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
             {},
             {
                 onSuccess: () => {
+                    toast.success(`Switched to team "${team.name}"`);
                     const currentUrl = window.location.pathname;
                     if (
                         previousTeamSlug &&

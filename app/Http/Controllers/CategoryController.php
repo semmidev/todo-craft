@@ -61,7 +61,7 @@ class CategoryController extends Controller
             'icon' => $validated['icon'] ?? 'tag',
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Kategori berhasil dibuat.')]);
 
         return back();
     }
@@ -84,7 +84,7 @@ class CategoryController extends Controller
             'color' => ['required', 'string'],
             'icon' => ['nullable', 'string'],
         ], [
-            'slug.unique' => __('A category with this name already exists in this team.'),
+            'slug.unique' => __('Kategori dengan nama ini sudah ada di dalam tim ini.'),
         ]);
 
         $category->update([
@@ -94,7 +94,7 @@ class CategoryController extends Controller
             'icon' => $validated['icon'] ?? $category->icon,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Kategori berhasil diperbarui.')]);
 
         return back();
     }
@@ -105,7 +105,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Kategori berhasil dihapus.')]);
 
         return back();
     }

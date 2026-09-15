@@ -48,19 +48,19 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                     {({ errors, processing }) => (
                         <>
                             <DialogHeader>
-                                <DialogTitle>Are you sure?</DialogTitle>
+                                <DialogTitle>Apakah Anda yakin?</DialogTitle>
                                 <DialogDescription>
-                                    This action cannot be undone. This will
-                                    permanently delete the team{' '}
-                                    <strong>"{team.name}"</strong>.
+                                    Tindakan ini tidak dapat dibatalkan. Ini akan
+                                    menghapus tim{' '}
+                                    <strong>"{team.name}"</strong> secara permanen.
                                 </DialogDescription>
                             </DialogHeader>
 
                             <div className="space-y-4 py-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="confirmation-name">
-                                        Type <strong>"{team.name}"</strong> to
-                                        confirm
+                                        Ketik <strong>"{team.name}"</strong> untuk
+                                        mengonfirmasi
                                     </Label>
                                     <Input
                                         id="confirmation-name"
@@ -72,7 +72,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                                 event.target.value,
                                             )
                                         }
-                                        placeholder="Enter team name"
+                                        placeholder="Masukkan nama tim"
                                         autoComplete="off"
                                     />
                                     <InputError message={errors.name} />
@@ -81,7 +81,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
 
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
-                                    <Button variant="secondary">Cancel</Button>
+                                    <Button variant="secondary">Batal</Button>
                                 </DialogClose>
 
                                 <Button
@@ -91,7 +91,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                     disabled={!canDeleteTeam}
                                     loading={processing}
                                 >
-                                    Delete team
+                                    Hapus tim
                                 </Button>
                             </DialogFooter>
                         </>
