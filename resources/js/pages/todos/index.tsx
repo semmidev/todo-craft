@@ -24,6 +24,7 @@ import { DataTablePagination } from '@/components/data-table/data-table-paginati
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -156,6 +157,10 @@ export default function TodosIndex({
     const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
     const [deletingTodoTarget, setDeletingTodoTarget] = useState<Todo | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+
+    const { uploadMultiple, isUploading: isPresignedUploading, progress } = usePresignedUpload();
+    const [createFiles, setCreateFiles] = useState<File[]>([]);
+    const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
 
     // Debounced search effect
     useEffect(() => {
@@ -302,18 +307,35 @@ export default function TodosIndex({
         searchQuery || statusFilter || priorityFilter || categoryFilter || assigneeFilter,
     );
 
-    const handleCreateSubmit = (e: FormEvent) => {
+    const handleCreateSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        createForm.transform((formData) => ({
-            ...formData,
-            due_date: formatDatetimeLocalToIsoWithTimezone(formData.due_date),
-        }));
-        createForm.post(`/${currentTeam.slug}/todos`, {
-            onSuccess: () => {
-                createForm.reset();
-                setIsCreateModalOpen(false);
-            },
-        });
+        setIsSubmittingCreate(true);
+
+        try {
+            let attachmentKeys: { key: string }[] = [];
+
+            if (createFiles.length > 0) {
+                const uploadResults = await uploadMultiple(createFiles);
+                attachmentKeys = uploadResults.map((res) => ({ key: res.key }));
+            }
+
+            const payload = {
+                ...createForm.data,
+                due_date: formatDatetimeLocalToIsoWithTimezone(createForm.data.due_date),
+                attachment_keys: attachmentKeys,
+            };
+
+            router.post(`/${currentTeam.slug}/todos`, payload, {
+                onSuccess: () => {
+                    createForm.reset();
+                    setCreateFiles([]);
+                    setIsCreateModalOpen(false);
+                },
+                onFinish: () => setIsSubmittingCreate(false),
+            });
+        } catch {
+            setIsSubmittingCreate(false);
+        }
     };
 
     const openEditModal = (todo: Todo) => {
@@ -960,9 +982,7 @@ export default function TodosIndex({
                                         className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
                                     />
                                 </div>
-                            </div>
-
-                            <div>
+                            </div>                             <div>
                                 <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                     Lampiran File
                                 </label>
@@ -971,27 +991,42 @@ export default function TodosIndex({
                                     multiple
                                     onChange={(e) => {
                                         if (e.target.files) {
-                                            createForm.setData(
-                                                'attachments',
-                                                Array.from(e.target.files),
-                                            );
+                                            setCreateFiles(Array.from(e.target.files));
                                         }
                                     }}
                                     className="bg-background border-input w-full rounded-lg border px-3 py-2 text-xs"
                                 />
+                                {isPresignedUploading && (
+                                    <div className="mt-2 space-y-1">
+                                        <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                            <span>Mengunggah berkas...</span>
+                                            <span>{progress}%</span>
+                                        </div>
+                                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                                            <div
+                                                className="h-full bg-primary transition-all duration-300"
+                                                style={{ width: `${progress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="border-border flex justify-end gap-2 border-t pt-4">
                                 <Button
                                     type="button"
                                     variant="secondary"
-                                    onClick={() => setIsCreateModalOpen(false)}
+                                    onClick={() => {
+                                        setIsCreateModalOpen(false);
+                                        setCreateFiles([]);
+                                    }}
                                 >
                                     Batal
                                 </Button>
                                 <Button
                                     type="submit"
-                                    loading={createForm.processing}
+                                    loading={createForm.processing || isPresignedUploading || isSubmittingCreate}
+                                    disabled={createForm.processing || isPresignedUploading || isSubmittingCreate}
                                 >
                                     Buat Tugas
                                 </Button>
