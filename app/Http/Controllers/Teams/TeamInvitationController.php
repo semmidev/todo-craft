@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Teams;
 
-use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\CreateTeamInvitationRequest;
 use App\Http\Requests\Teams\RespondToTeamInvitationRequest;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class TeamInvitationController extends Controller
 {
@@ -26,7 +26,7 @@ class TeamInvitationController extends Controller
 
         $invitation = $team->invitations()->create([
             'email' => $request->validated('email'),
-            'role' => TeamRole::from($request->validated('role')),
+            'role' => $request->validated('role'),
             'invited_by' => $request->user()->id,
             'expires_at' => now()->addDays(3),
         ]);
@@ -64,11 +64,22 @@ class TeamInvitationController extends Controller
 
         DB::transaction(function () use ($user, $invitation) {
             $team = $invitation->team;
+            $roleValue = is_string($invitation->role) ? $invitation->role : ($invitation->role?->value ?? 'member');
 
             $team->memberships()->firstOrCreate(
                 ['user_id' => $user->id],
-                ['role' => $invitation->role],
+                ['role' => $roleValue],
             );
+
+            // Assign Spatie Permission role scoped to this team
+            setPermissionsTeamId($team->id);
+            $spatieRole = Role::where('name', $roleValue)
+                ->where('team_id', $team->id)
+                ->first();
+
+            if ($spatieRole) {
+                $user->assignRole($spatieRole);
+            }
 
             $invitation->update(['accepted_at' => now()]);
 

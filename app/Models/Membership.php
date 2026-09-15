@@ -60,10 +60,19 @@ class Membership extends Pivot
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    /**
+     * Get the role attribute as a TeamRole enum or string.
+     */
+    public function getRoleAttribute(mixed $value): TeamRole|string|null
     {
-        return [
-            'role' => TeamRole::class,
-        ];
+        if (is_null($value)) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return TeamRole::tryFrom($value) ?? $value;
+        }
+
+        return $value;
     }
 }

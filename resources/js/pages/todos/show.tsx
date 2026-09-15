@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
@@ -7,14 +7,13 @@ import {
     FileText,
     History,
     Paperclip,
-    Plus,
     Tag,
-    Trash2,
     User,
     UserCheck,
 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 
 interface Category {
     id: number;
@@ -83,13 +82,14 @@ interface PageProps {
 
 export default function TodoShow({ todo, currentTeam }: PageProps) {
     const [isUploading, setIsUploading] = useState(false);
+    const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
 
     const handleToggleItem = (itemId: number) => {
         router.patch(
             `/${currentTeam.slug}/todos/${todo.id}/items/${itemId}/toggle`,
             {},
-            { preserveScroll: true }
+            { preserveScroll: true },
         );
     };
 
@@ -97,6 +97,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
         e.preventDefault();
         if (files.length === 0) return;
 
+        setIsSubmittingUpload(true);
         const formData = new FormData();
         files.forEach((f) => formData.append('attachments[]', f));
         formData.append('title', todo.title);
@@ -109,6 +110,7 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                 setFiles([]);
                 setIsUploading(false);
             },
+            onFinish: () => setIsSubmittingUpload(false),
         });
     };
 
@@ -116,55 +118,64 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
         <>
             <Head title={`Todo: ${todo.title}`} />
 
-            <div className="space-y-6 p-6 max-w-6xl mx-auto">
-                {/* Top Navigation */}
-                <Link
-                    href={`/${currentTeam.slug}/todos`}
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition font-medium"
+            <div className="w-full flex-1 space-y-8 p-6 lg:p-8">
+                <Heading
+                    badge="Task Details"
+                    title={todo.title}
+                    description={`Detailed view, checklist, attachments, and audit history for ${currentTeam.name}.`}
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back to Todos
-                </Link>
+                    <Link
+                        href={`/${currentTeam.slug}/todos`}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[#e7e6e1] bg-[#efeeeb] px-4 py-2.5 text-sm font-medium text-[#121212] transition-colors hover:bg-[#e7e6e1] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#f8f8f6] dark:hover:bg-[#373734]"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Todos
+                    </Link>
+                </Heading>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     {/* Main Content (2 Cols) */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6 lg:col-span-2">
                         {/* Title Header Card */}
-                        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs space-y-4">
+                        <div className="bg-card border-border space-y-4 rounded-2xl border p-6 shadow-xs">
                             <div className="flex items-center gap-2">
                                 {todo.category && (
                                     <span
-                                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                                        className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
                                         style={{
                                             backgroundColor: `${todo.category.color}15`,
                                             borderColor: `${todo.category.color}30`,
                                             color: todo.category.color,
                                         }}
                                     >
-                                        <Tag className="w-3 h-3" />
+                                        <Tag className="h-3 w-3" />
                                         {todo.category.name}
                                     </span>
                                 )}
-                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase bg-secondary text-secondary-foreground">
+                                <span className="bg-secondary text-secondary-foreground rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase">
                                     {todo.priority} Priority
                                 </span>
                             </div>
 
-                            <h1 className="text-2xl font-bold tracking-tight">{todo.title}</h1>
+                            <h1 className="text-2xl font-bold tracking-tight">
+                                {todo.title}
+                            </h1>
 
                             {todo.description ? (
                                 <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
                                     {todo.description}
                                 </p>
                             ) : (
-                                <p className="text-muted-foreground/60 text-sm italic">No description provided.</p>
+                                <p className="text-muted-foreground/60 text-sm italic">
+                                    No description provided.
+                                </p>
                             )}
                         </div>
 
                         {/* Checklist Section */}
-                        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs space-y-4">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <CheckSquare className="w-5 h-5 text-primary" />
+                        <div className="bg-card border-border space-y-4 rounded-2xl border p-6 shadow-xs">
+                            <h3 className="flex items-center gap-2 text-lg font-bold">
+                                <CheckSquare className="text-primary h-5 w-5" />
                                 Checklist Items
                             </h3>
 
@@ -173,18 +184,22 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                     {todo.items.map((item) => (
                                         <div
                                             key={item.id}
-                                            onClick={() => handleToggleItem(item.id)}
-                                            className="flex items-center gap-3 p-3 bg-accent/30 hover:bg-accent/60 rounded-xl border border-border/50 cursor-pointer transition"
+                                            onClick={() =>
+                                                handleToggleItem(item.id)
+                                            }
+                                            className="bg-accent/30 hover:bg-accent/60 border-border/50 flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition"
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={item.is_completed}
                                                 onChange={() => {}}
-                                                className="w-4 h-4 rounded text-primary"
+                                                className="text-primary h-4 w-4 rounded"
                                             />
                                             <span
                                                 className={`text-sm font-medium ${
-                                                    item.is_completed ? 'line-through text-muted-foreground' : ''
+                                                    item.is_completed
+                                                        ? 'text-muted-foreground line-through'
+                                                        : ''
                                                 }`}
                                             >
                                                 {item.title}
@@ -193,73 +208,90 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-muted-foreground text-sm italic">No checklist items defined.</p>
+                                <p className="text-muted-foreground text-sm italic">
+                                    No checklist items defined.
+                                </p>
                             )}
                         </div>
 
                         {/* File Attachments */}
-                        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs space-y-4">
+                        <div className="bg-card border-border space-y-4 rounded-2xl border p-6 shadow-xs">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <Paperclip className="w-5 h-5 text-primary" />
-                                    File Attachments ({todo.attachments?.length || 0})
+                                <h3 className="flex items-center gap-2 text-lg font-bold">
+                                    <Paperclip className="text-primary h-5 w-5" />
+                                    File Attachments (
+                                    {todo.attachments?.length || 0})
                                 </h3>
                                 <button
                                     onClick={() => setIsUploading(!isUploading)}
-                                    className="text-xs text-primary hover:underline font-semibold"
+                                    className="text-primary text-xs font-semibold hover:underline"
                                 >
                                     {isUploading ? 'Cancel' : '+ Add Files'}
                                 </button>
                             </div>
 
                             {isUploading && (
-                                <form onSubmit={handleUploadFiles} className="space-y-3 bg-accent/20 p-4 rounded-xl border border-border">
+                                <form
+                                    onSubmit={handleUploadFiles}
+                                    className="bg-accent/20 border-border space-y-3 rounded-xl border p-4"
+                                >
                                     <input
                                         type="file"
                                         multiple
-                                        onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
-                                        className="text-xs w-full"
+                                        onChange={(e) =>
+                                            e.target.files &&
+                                            setFiles(Array.from(e.target.files))
+                                        }
+                                        className="w-full text-xs"
                                     />
-                                    <button
+                                    <Button
                                         type="submit"
+                                        size="sm"
+                                        loading={isSubmittingUpload}
                                         disabled={files.length === 0}
-                                        className="px-3 py-1.5 bg-primary text-primary-foreground text-xs rounded-lg font-medium"
                                     >
                                         Upload
-                                    </button>
+                                    </Button>
                                 </form>
                             )}
 
                             {todo.attachments && todo.attachments.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                     {todo.attachments.map((file) => (
                                         <a
                                             key={file.id}
                                             href={file.original_url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="group block border border-border rounded-xl p-3 bg-background hover:bg-accent transition"
+                                            className="group border-border bg-background hover:bg-accent block rounded-xl border p-3 transition"
                                         >
-                                            {file.mime_type?.startsWith('image/') ? (
+                                            {file.mime_type?.startsWith(
+                                                'image/',
+                                            ) ? (
                                                 <img
                                                     src={file.thumb_url}
                                                     alt={file.name}
-                                                    className="w-full h-24 object-cover rounded-lg mb-2"
+                                                    className="mb-2 h-24 w-full rounded-lg object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-full h-24 bg-accent/50 rounded-lg mb-2 flex items-center justify-center">
-                                                    <FileText className="w-8 h-8 text-muted-foreground" />
+                                                <div className="bg-accent/50 mb-2 flex h-24 w-full items-center justify-center rounded-lg">
+                                                    <FileText className="text-muted-foreground h-8 w-8" />
                                                 </div>
                                             )}
-                                            <div className="text-xs font-medium truncate">{file.file_name}</div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                {(file.size / 1024).toFixed(1)} KB
+                                            <div className="truncate text-xs font-medium">
+                                                {file.file_name}
+                                            </div>
+                                            <div className="text-muted-foreground text-[10px]">
+                                                {(file.size / 1024).toFixed(1)}{' '}
+                                                KB
                                             </div>
                                         </a>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-muted-foreground text-sm italic">No files attached to this todo.</p>
+                                <p className="text-muted-foreground text-sm italic">
+                                    No files attached to this todo.
+                                </p>
                             )}
                         </div>
                     </div>
@@ -267,63 +299,91 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                     {/* Sidebar (1 Col): Activity Log & Meta */}
                     <div className="space-y-6">
                         {/* Status & Metadata */}
-                        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs space-y-4">
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Metadata</h3>
+                        <div className="bg-card border-border space-y-4 rounded-2xl border p-6 shadow-xs">
+                            <h3 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+                                Metadata
+                            </h3>
 
                             <div className="space-y-3 text-sm">
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground flex items-center gap-1.5">
-                                        <Clock className="w-4 h-4" /> Status
+                                        <Clock className="h-4 w-4" /> Status
                                     </span>
-                                    <span className="font-semibold capitalize">{todo.status.replace('_', ' ')}</span>
+                                    <span className="font-semibold capitalize">
+                                        {todo.status.replace('_', ' ')}
+                                    </span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground flex items-center gap-1.5">
-                                        <UserCheck className="w-4 h-4" /> Assignee
+                                        <UserCheck className="h-4 w-4" />{' '}
+                                        Assignee
                                     </span>
-                                    <span className="font-semibold">{todo.assignee ? todo.assignee.name : 'Unassigned'}</span>
+                                    <span className="font-semibold">
+                                        {todo.assignee
+                                            ? todo.assignee.name
+                                            : 'Unassigned'}
+                                    </span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <span className="text-muted-foreground flex items-center gap-1.5">
-                                        <User className="w-4 h-4" /> Created By
+                                        <User className="h-4 w-4" /> Created By
                                     </span>
-                                    <span className="font-semibold">{todo.creator ? todo.creator.name : 'System'}</span>
+                                    <span className="font-semibold">
+                                        {todo.creator
+                                            ? todo.creator.name
+                                            : 'System'}
+                                    </span>
                                 </div>
 
                                 {todo.due_date && (
                                     <div className="flex items-center justify-between">
                                         <span className="text-muted-foreground flex items-center gap-1.5">
-                                            <Calendar className="w-4 h-4" /> Due Date
+                                            <Calendar className="h-4 w-4" /> Due
+                                            Date
                                         </span>
-                                        <span className="font-semibold">{new Date(todo.due_date).toLocaleString()}</span>
+                                        <span className="font-semibold">
+                                            {new Date(
+                                                todo.due_date,
+                                            ).toLocaleString()}
+                                        </span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Audit Trail Stream (Spatie Activitylog) */}
-                        <div className="bg-card border border-border p-6 rounded-2xl shadow-xs space-y-4">
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <History className="w-4 h-4 text-primary" />
+                        <div className="bg-card border-border space-y-4 rounded-2xl border p-6 shadow-xs">
+                            <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold tracking-wider uppercase">
+                                <History className="text-primary h-4 w-4" />
                                 Audit Trail Log
                             </h3>
 
                             {todo.activities && todo.activities.length > 0 ? (
-                                <div className="space-y-4 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-border">
+                                <div className="before:bg-border relative space-y-4 before:absolute before:inset-0 before:left-3 before:w-0.5">
                                     {todo.activities.map((act) => (
-                                        <div key={act.id} className="relative pl-7 text-xs space-y-1">
-                                            <div className="absolute left-1.5 top-1 w-3 h-3 rounded-full bg-primary ring-4 ring-background" />
-                                            <div className="font-semibold">{act.description}</div>
+                                        <div
+                                            key={act.id}
+                                            className="relative space-y-1 pl-7 text-xs"
+                                        >
+                                            <div className="bg-primary ring-background absolute top-1 left-1.5 h-3 w-3 rounded-full ring-4" />
+                                            <div className="font-semibold">
+                                                {act.description}
+                                            </div>
                                             <div className="text-muted-foreground text-[11px]">
-                                                {act.causer ? act.causer.name : 'User'} • {act.created_at}
+                                                {act.causer
+                                                    ? act.causer.name
+                                                    : 'User'}{' '}
+                                                • {act.created_at}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-muted-foreground text-xs italic">No activity logged yet.</p>
+                                <p className="text-muted-foreground text-xs italic">
+                                    No activity logged yet.
+                                </p>
                             )}
                         </div>
                     </div>
@@ -333,7 +393,10 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
     );
 }
 
-TodoShow.layout = (props: { currentTeam?: { slug: string } | null; todo?: { id: number; title: string } | null }) => ({
+TodoShow.layout = (props: {
+    currentTeam?: { slug: string } | null;
+    todo?: { id: number; title: string } | null;
+}) => ({
     breadcrumbs: [
         {
             title: 'Todos',
@@ -341,7 +404,10 @@ TodoShow.layout = (props: { currentTeam?: { slug: string } | null; todo?: { id: 
         },
         {
             title: props.todo?.title ?? 'Todo Detail',
-            href: props.currentTeam && props.todo ? `/${props.currentTeam.slug}/todos/${props.todo.id}` : '#',
+            href:
+                props.currentTeam && props.todo
+                    ? `/${props.currentTeam.slug}/todos/${props.todo.id}`
+                    : '#',
         },
     ],
 });

@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\TeamRole;
+use App\Actions\Teams\CreateTeam;
 use App\Models\Category;
-use App\Models\Team;
 use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -25,24 +24,14 @@ class TodoSeeder extends Seeder
             ]
         );
 
-        $user->assignRole('admin');
+        // Use CreateTeam action so default roles are auto-provisioned
+        $team = $user->teams()->first();
 
-        // Ensure team exists for user
-        $team = $user->teams()->first() ?? Team::firstOrCreate(
-            ['slug' => 'default-workspace'],
-            [
-                'name' => 'Default Workspace',
-                'is_personal' => true,
-            ]
-        );
-
-        if (! $user->teams()->where('teams.id', $team->id)->exists()) {
-            $team->members()->attach($user->id, [
-                'role' => TeamRole::Owner->value,
-            ]);
+        if (! $team) {
+            $team = app(CreateTeam::class)->handle($user, 'Default Workspace', isPersonal: true);
+        } else {
+            $user->update(['current_team_id' => $team->id]);
         }
-
-        $user->update(['current_team_id' => $team->id]);
 
         // Seed Categories
         $categories = [
@@ -63,8 +52,8 @@ class TodoSeeder extends Seeder
         // Seed Todos
         $todosData = [
             [
-                'title' => 'Setup Laravel Horizon and Redis Queue',
-                'description' => 'Configure queue connection and monitor throughput in Horizon dashboard.',
+                'title' => 'Implementasi RBAC dinamis per tim',
+                'description' => 'Role dan permission dikelola per tim menggunakan Spatie Permission dengan fitur teams.',
                 'status' => 'in_progress',
                 'priority' => 'high',
                 'category_id' => $categoryModels[0]->id,

@@ -34,20 +34,18 @@ export default function TeamsIndex({ teams }: Props) {
 
             <h1 className="sr-only">Teams</h1>
 
-            <div className="flex flex-col space-y-6">
-                <div className="flex items-center justify-between">
-                    <Heading
-                        variant="small"
-                        title="Teams"
-                        description="Manage your teams and team memberships"
-                    />
-
+            <div className="flex flex-col space-y-8">
+                <Heading
+                    badge="Workspaces"
+                    title="Teams List"
+                    description="Manage your team workspaces and memberships"
+                >
                     <CreateTeamModal>
                         <Button data-test="teams-new-team-button">
                             <Plus /> New team
                         </Button>
                     </CreateTeamModal>
-                </div>
+                </Heading>
 
                 <div className="space-y-3">
                     {teams.map((team) => {

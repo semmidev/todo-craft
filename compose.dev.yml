@@ -1,69 +1,69 @@
 services:
-  mysql:
-    image: mysql:8.4
-    container_name: laravel-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - laravel-net
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-psecret"]
-      retries: 3
-      timeout: 5s
+    mysql:
+        image: mysql:8.4
+        container_name: laravel-mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: root
+        ports:
+            - '3306:3306'
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - laravel-net
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-psecret']
+            retries: 3
+            timeout: 5s
 
-  redis:
-    image: redis:8-alpine
-    container_name: laravel-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - laravel-net
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
+    redis:
+        image: redis:8-alpine
+        container_name: laravel-redis
+        restart: unless-stopped
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+        networks:
+            - laravel-net
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 5s
+            timeout: 3s
+            retries: 3
 
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: laravel-mailpit
-    restart: unless-stopped
-    ports:
-      - "1025:1025" # SMTP Port
-      - "8025:8025" # Web Dashboard
-    networks:
-      - laravel-net
+    mailpit:
+        image: axllent/mailpit:latest
+        container_name: laravel-mailpit
+        restart: unless-stopped
+        ports:
+            - '1025:1025' # SMTP Port
+            - '8025:8025' # Web Dashboard
+        networks:
+            - laravel-net
 
-  rustfs:
-    image: rustfs/rustfs:latest
-    container_name: laravel-rustfs
-    restart: unless-stopped
-    ports:
-      - "9000:9000" # S3 API & Web Console
-    environment:
-      RUSTFS_ROOT_USER: "admin"
-      RUSTFS_ROOT_PASSWORD: "password123"
-    volumes:
-      - rustfs_data:/data
-    networks:
-      - laravel-net
+    rustfs:
+        image: rustfs/rustfs:latest
+        container_name: laravel-rustfs
+        restart: unless-stopped
+        ports:
+            - '9000:9000' # S3 API & Web Console
+        environment:
+            RUSTFS_ROOT_USER: 'admin'
+            RUSTFS_ROOT_PASSWORD: 'password123'
+        volumes:
+            - rustfs_data:/data
+        networks:
+            - laravel-net
 
 volumes:
-  mysql_data:
-  redis_data:
-  rustfs_data:
+    mysql_data:
+    redis_data:
+    rustfs_data:
 
 networks:
-  laravel-net:
-    driver: bridge
+    laravel-net:
+        driver: bridge

@@ -4,16 +4,17 @@ namespace App\Concerns;
 
 use App\Data\TeamPermissions;
 use App\Data\UserTeam;
-use App\Enums\TeamPermission;
 use App\Enums\TeamRole;
 use App\Models\Membership;
 use App\Models\Team;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 trait HasTeams
 {
@@ -114,18 +115,31 @@ trait HasTeams
      */
     public function ownsTeam(Team $team): bool
     {
-        return $this->teamRole($team) === TeamRole::Owner;
+        $role = $this->teamRole($team);
+
+        return $role === TeamRole::Owner || $role === TeamRole::Owner->value;
     }
 
     /**
      * Get the user's role on the given team.
      */
-    public function teamRole(Team $team): ?TeamRole
+    public function teamRole(Team $team): TeamRole|string|null
     {
-        return $this->teamMemberships()
+        $membership = $this->teamMemberships()
             ->where('team_id', $team->id)
-            ->first()
-            ?->role;
+            ->first();
+
+        if (! $membership) {
+            return null;
+        }
+
+        $role = $membership->role;
+
+        if (is_string($role)) {
+            return TeamRole::tryFrom($role) ?? $role;
+        }
+
+        return $role;
     }
 
     /**
@@ -148,14 +162,16 @@ trait HasTeams
     public function toUserTeam(Team $team): UserTeam
     {
         $role = $this->teamRole($team);
+        $roleValue = $role instanceof TeamRole ? $role->value : $role;
+        $roleLabel = $role instanceof TeamRole ? $role->label() : ucfirst($role ?? '');
 
         return new UserTeam(
             id: $team->id,
             name: $team->name,
             slug: $team->slug,
             isPersonal: $team->is_personal,
-            role: $role?->value,
-            roleLabel: $role?->label(),
+            role: $roleValue,
+            roleLabel: $roleLabel,
             isCurrent: $this->isCurrentTeam($team),
         );
     }
@@ -165,16 +181,17 @@ trait HasTeams
      */
     public function toTeamPermissions(Team $team): TeamPermissions
     {
-        $role = $this->teamRole($team);
+        setPermissionsTeamId($team->id);
+        $isOwner = $this->ownsTeam($team);
 
         return new TeamPermissions(
-            canUpdateTeam: $role?->hasPermission(TeamPermission::UpdateTeam) ?? false,
-            canDeleteTeam: $role?->hasPermission(TeamPermission::DeleteTeam) ?? false,
-            canAddMember: $role?->hasPermission(TeamPermission::AddMember) ?? false,
-            canUpdateMember: $role?->hasPermission(TeamPermission::UpdateMember) ?? false,
-            canRemoveMember: $role?->hasPermission(TeamPermission::RemoveMember) ?? false,
-            canCreateInvitation: $role?->hasPermission(TeamPermission::CreateInvitation) ?? false,
-            canCancelInvitation: $role?->hasPermission(TeamPermission::CancelInvitation) ?? false,
+            canUpdateTeam: $isOwner || $this->hasTeamPermission($team, 'teams.update'),
+            canDeleteTeam: ! $team->is_personal && ($isOwner || $this->hasTeamPermission($team, 'teams.delete')),
+            canAddMember: $isOwner || $this->hasTeamPermission($team, 'teams.members.manage'),
+            canUpdateMember: $isOwner || $this->hasTeamPermission($team, 'teams.members.manage'),
+            canRemoveMember: $isOwner || $this->hasTeamPermission($team, 'teams.members.manage'),
+            canCreateInvitation: $isOwner || $this->hasTeamPermission($team, 'teams.invitations.manage'),
+            canCancelInvitation: $isOwner || $this->hasTeamPermission($team, 'teams.invitations.manage'),
         );
     }
 
@@ -189,8 +206,38 @@ trait HasTeams
     /**
      * Determine if the user has the given permission on the team.
      */
-    public function hasTeamPermission(Team $team, TeamPermission $permission): bool
+    public function hasTeamPermission(Team $team, string $permission): bool
     {
-        return $this->teamRole($team)?->hasPermission($permission) ?? false;
+        setPermissionsTeamId($team->id);
+
+        if (! $this->belongsToTeam($team)) {
+            return false;
+        }
+
+        try {
+            return $this->hasPermissionTo($permission);
+        } catch (PermissionDoesNotExist) {
+            return false;
+        }
+    }
+
+    /**
+     * Get all permission names granted to the user for the given team.
+     *
+     * @return array<string>
+     */
+    public function getPermissionsForTeam(Team $team): array
+    {
+        if ($this->ownsTeam($team)) {
+            return RoleAndPermissionSeeder::PERMISSIONS;
+        }
+
+        setPermissionsTeamId($team->id);
+
+        try {
+            return $this->getAllPermissions()->pluck('name')->values()->toArray();
+        } catch (\Throwable) {
+            return [];
+        }
     }
 }

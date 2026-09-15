@@ -1,51 +1,58 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { Shield, Users } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
-];
+type SharedProps = {
+    currentTeam?: { slug: string; name: string };
+};
 
-export default function SettingsLayout({ children }: PropsWithChildren) {
-    const { isCurrentOrParentUrl } = useCurrentUrl();
+export default function TeamLayout({ children }: PropsWithChildren) {
+    const page = usePage<SharedProps>();
+    const currentTeamSlug = page.props.currentTeam?.slug ?? '';
+    const { isCurrentUrl } = useCurrentUrl();
+
+    const teamNavItems: NavItem[] = [
+        {
+            title: 'Team Settings',
+            href: currentTeamSlug
+                ? `/settings/teams/${currentTeamSlug}`
+                : '/settings/teams',
+            icon: Users,
+        },
+        {
+            title: 'Team Roles',
+            href: currentTeamSlug
+                ? `/settings/teams/${currentTeamSlug}/roles`
+                : '#',
+            icon: Shield,
+        },
+    ];
 
     return (
         <div className="space-y-6 px-4 py-6 md:px-8">
             <Heading
-                badge="Personal Account"
-                title="Account Settings"
-                description="Manage your profile, security, and appearance settings"
+                badge="Workspace Administration"
+                title="Team Management"
+                description="Manage team workspace settings, members, invitations, and dynamic roles"
             />
 
             <div className="flex flex-col items-start gap-8 lg:flex-row lg:gap-12">
                 <aside className="w-full shrink-0 lg:w-56">
                     <nav
                         className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:pb-0"
-                        aria-label="Settings"
+                        aria-label="Team Management"
                     >
-                        {sidebarNavItems.map((item, index) => {
-                            const active = isCurrentOrParentUrl(item.href);
+                        {teamNavItems.map((item, index) => {
+                            const active =
+                                item.title === 'Team Roles'
+                                    ? isCurrentUrl(item.href)
+                                    : isCurrentUrl(item.href) ||
+                                      isCurrentUrl('/settings/teams');
                             return (
                                 <Button
                                     key={`${toUrl(item.href)}-${index}`}

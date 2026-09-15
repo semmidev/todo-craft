@@ -1,8 +1,7 @@
 <?php
 
-use App\Enums\TeamRole;
+use App\Actions\Teams\CreateTeam;
 use App\Models\Category;
-use App\Models\Team;
 use App\Models\Todo;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -11,16 +10,13 @@ beforeEach(function () {
     $this->seed(RoleAndPermissionSeeder::class);
 
     $this->user = User::factory()->create();
-    $this->user->assignRole('admin');
 
-    $this->team = Team::create([
-        'name' => 'Test Team',
-        'slug' => 'test-team',
-        'is_personal' => true,
-    ]);
-
-    $this->team->members()->attach($this->user->id, ['role' => TeamRole::Owner->value]);
-    $this->user->update(['current_team_id' => $this->team->id]);
+    $this->team = app(CreateTeam::class)->handle(
+        $this->user,
+        'Test Team',
+        isPersonal: true,
+        slug: 'test-team'
+    );
 });
 
 test('authenticated user can view todo index', function () {

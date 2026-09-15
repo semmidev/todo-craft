@@ -1,6 +1,6 @@
 DOCKER ?= $(shell which docker 2>/dev/null || which podman 2>/dev/null)
 
-.PHONY: help setup up down restart destroy logs dev run test lint lint-fix migrate fresh seed build wayfinder horizon clean
+.PHONY: help setup up down restart destroy logs dev run test lint lint-fix migrate fresh seed build wayfinder clean
 
 help: ## Show this help menu
 	@echo "\033[36m=====================================================\033[0m"
@@ -62,9 +62,6 @@ build: ## Build frontend assets for production
 
 wayfinder: ## Generate Wayfinder TypeScript functions for routes & actions
 	@php artisan wayfinder:generate
-
-horizon: ## Start Laravel Horizon queue worker monitoring
-	@php artisan horizon
 
 
 clean: ## Clear all application caches (config, route, view, cache)

@@ -39,7 +39,8 @@ export default function Login({
             <PasskeyVerify />
 
             <Form
-                {...store.form()}
+                action={store.url()}
+                method="post"
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >

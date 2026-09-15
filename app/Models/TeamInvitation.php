@@ -94,10 +94,30 @@ class TeamInvitation extends Model
      *
      * @return array<string, string>
      */
+    /**
+     * Get the role attribute as a TeamRole enum or string.
+     */
+    public function getRoleAttribute(mixed $value): TeamRole|string|null
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return TeamRole::tryFrom($value) ?? $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
-            'role' => TeamRole::class,
             'expires_at' => 'datetime',
             'accepted_at' => 'datetime',
         ];

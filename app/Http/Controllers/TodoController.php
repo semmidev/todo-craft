@@ -112,7 +112,9 @@ class TodoController extends Controller
             }
         }
 
-        return back()->with('success', 'Todo task created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task created.')]);
+
+        return back();
     }
 
     /**
@@ -155,7 +157,9 @@ class TodoController extends Controller
             }
         }
 
-        return back()->with('success', 'Todo updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task updated.')]);
+
+        return back();
     }
 
     /**
@@ -167,7 +171,9 @@ class TodoController extends Controller
 
         $todo->delete();
 
-        return back()->with('success', 'Todo deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo task deleted.')]);
+
+        return back();
     }
 
     /**
@@ -184,7 +190,9 @@ class TodoController extends Controller
             'completed_at' => $newStatus === 'completed' ? now() : null,
         ]);
 
-        return back()->with('success', 'Todo status updated.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo status updated.')]);
+
+        return back();
     }
 
     /**
@@ -198,6 +206,8 @@ class TodoController extends Controller
             'is_completed' => ! $item->is_completed,
         ]);
 
-        return back()->with('success', 'Checklist item updated.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Checklist item updated.')]);
+
+        return back();
     }
 }

@@ -46,6 +46,14 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentTeam' => fn () => $user?->currentTeam ? $user->toUserTeam($user->currentTeam) : null,
             'teams' => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
+            'userPermissions' => fn () => $user && $user->currentTeam ? $user->getPermissionsForTeam($user->currentTeam) : [],
+            'flash' => fn () => [
+                'toast' => $request->session()->get('inertia.flash_data.toast') ?? $request->session()->get('toast'),
+                'success' => $request->session()->get('inertia.flash_data.success') ?? $request->session()->get('success'),
+                'error' => $request->session()->get('inertia.flash_data.error') ?? $request->session()->get('error'),
+                'info' => $request->session()->get('inertia.flash_data.info') ?? $request->session()->get('info'),
+                'warning' => $request->session()->get('inertia.flash_data.warning') ?? $request->session()->get('warning'),
+            ],
         ];
     }
 }

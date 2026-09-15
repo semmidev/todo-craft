@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Data\CategoryData;
 use App\Models\Category;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,33 +38,65 @@ class CategoryController extends Controller
     {
         $this->authorize('create', [Category::class, $currentTeam]);
 
-        $data = CategoryData::validate($request->all());
+        $request->merge(['slug' => Str::slug($request->input('name', ''))]);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'slug' => [
+                'required',
+                'string',
+                Rule::unique('categories', 'slug')->where('team_id', $currentTeam->id),
+            ],
+            'color' => ['required', 'string'],
+            'icon' => ['nullable', 'string'],
+        ], [
+            'slug.unique' => __('A category with this name already exists in this team.'),
+        ]);
 
         Category::create([
             'team_id' => $currentTeam->id,
-            'name' => $data['name'],
-            'slug' => Str::slug($data['name']),
-            'color' => $data['color'] ?? '#3b82f6',
-            'icon' => $data['icon'] ?? 'tag',
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'color' => $validated['color'] ?? '#3b82f6',
+            'icon' => $validated['icon'] ?? 'tag',
         ]);
 
-        return back()->with('success', 'Category created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category created.')]);
+
+        return back();
     }
 
     public function update(Request $request, Team $currentTeam, Category $category): RedirectResponse
     {
         $this->authorize('update', $category);
 
-        $data = CategoryData::validate($request->all());
+        $request->merge(['slug' => Str::slug($request->input('name', ''))]);
 
-        $category->update([
-            'name' => $data['name'],
-            'slug' => Str::slug($data['name']),
-            'color' => $data['color'],
-            'icon' => $data['icon'] ?? $category->icon,
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'slug' => [
+                'required',
+                'string',
+                Rule::unique('categories', 'slug')
+                    ->where('team_id', $currentTeam->id)
+                    ->ignore($category->id),
+            ],
+            'color' => ['required', 'string'],
+            'icon' => ['nullable', 'string'],
+        ], [
+            'slug.unique' => __('A category with this name already exists in this team.'),
         ]);
 
-        return back()->with('success', 'Category updated successfully.');
+        $category->update([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'color' => $validated['color'],
+            'icon' => $validated['icon'] ?? $category->icon,
+        ]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category updated.')]);
+
+        return back();
     }
 
     public function destroy(Team $currentTeam, Category $category): RedirectResponse
@@ -73,6 +105,8 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return back()->with('success', 'Category deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Category deleted.')]);
+
+        return back();
     }
 }

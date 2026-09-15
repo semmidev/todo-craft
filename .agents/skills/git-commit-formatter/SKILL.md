@@ -4,8 +4,8 @@ description: Formats git commit messages using the Conventional Commits spec wit
 license: MIT
 compatibility: opencode
 metadata:
-  language: id
-  standard: conventional-commits
+    language: id
+    standard: conventional-commits
 ---
 
 ## What I do
@@ -36,19 +36,19 @@ Use this skill whenever creating, writing, reviewing, or fixing git commit messa
 
 ## Allowed Types (do not translate the type tags)
 
-| Type | Intent / Usage | SemVer Impact |
-| :--- | :--- | :--- |
-| **feat** | Fitur baru untuk pengguna (a new feature) | MINOR (`v1.X.0`) |
-| **fix** | Perbaikan bug / error (a bug fix) | PATCH (`v1.0.X`) |
-| **docs** | Perubahan dokumentasi saja (documentation only) | None |
-| **style** | Format kode yang tidak mengubah logika (spasi, titik koma, indentasi) | None |
-| **refactor** | Restrukturisasi kode tanpa mengubah perilaku eksternal | None |
-| **perf** | Peningkatan performa dan efisiensi eksekusi | PATCH (`v1.0.X`) |
-| **test** | Penambahan atau perbaikan unit test / integration test | None |
-| **build** | Perubahan pada sistem build, kompilasi, atau dependensi | None |
-| **ci** | Perubahan pada CI/CD workflow (`.github/workflows/`) | None |
-| **chore** | Pemeliharaan rutin, pembersihan berkas, atau tugas maintenance | None |
-| **revert** | Membatalkan (revert) commit sebelumnya | None |
+| Type         | Intent / Usage                                                        | SemVer Impact    |
+| :----------- | :-------------------------------------------------------------------- | :--------------- |
+| **feat**     | Fitur baru untuk pengguna (a new feature)                             | MINOR (`v1.X.0`) |
+| **fix**      | Perbaikan bug / error (a bug fix)                                     | PATCH (`v1.0.X`) |
+| **docs**     | Perubahan dokumentasi saja (documentation only)                       | None             |
+| **style**    | Format kode yang tidak mengubah logika (spasi, titik koma, indentasi) | None             |
+| **refactor** | Restrukturisasi kode tanpa mengubah perilaku eksternal                | None             |
+| **perf**     | Peningkatan performa dan efisiensi eksekusi                           | PATCH (`v1.0.X`) |
+| **test**     | Penambahan atau perbaikan unit test / integration test                | None             |
+| **build**    | Perubahan pada sistem build, kompilasi, atau dependensi               | None             |
+| **ci**       | Perubahan pada CI/CD workflow (`.github/workflows/`)                  | None             |
+| **chore**    | Pemeliharaan rutin, pembersihan berkas, atau tugas maintenance        | None             |
+| **revert**   | Membatalkan (revert) commit sebelumnya                                | None             |
 
 ---
 
@@ -69,28 +69,29 @@ Use this skill whenever creating, writing, reviewing, or fixing git commit messa
 ## Rules & Formatting Directives
 
 1. **Type & Scope**:
-   - Tentukan `type` yang paling tepat berdasarkan diff perubahan.
-   - Gunakan `scope` spesifik dalam tanda kurung jika perubahan terisolasi pada modul tertentu (misal: `feat(auth)`, `fix(url)`).
+    - Tentukan `type` yang paling tepat berdasarkan diff perubahan.
+    - Gunakan `scope` spesifik dalam tanda kurung jika perubahan terisolasi pada modul tertentu (misal: `feat(auth)`, `fix(url)`).
 
 2. **Description (Bahasa Indonesia Baku)**:
-   - Tulis deskripsi menggunakan Bahasa Indonesia yang aktif dan baku (kalimat aktif dengan awalan `me-` atau kata kerja aksi).
-   - Contoh kata kerja baku: `menambahkan`, `memperbaiki`, `memperbarui`, `menghapus`, `mengoptimalkan`, `merekstrukturisasi`.
-   - Huruf pertama setelah tanda titik dua `:` menggunakan huruf kecil.
-   - Jangan akhiri baris judul commit dengan tanda titik.
-   - Batasi panjang baris judul commit maksimal 72 karakter.
+    - Tulis deskripsi menggunakan Bahasa Indonesia yang aktif dan baku (kalimat aktif dengan awalan `me-` atau kata kerja aksi).
+    - Contoh kata kerja baku: `menambahkan`, `memperbaiki`, `memperbarui`, `menghapus`, `mengoptimalkan`, `merekstrukturisasi`.
+    - Huruf pertama setelah tanda titik dua `:` menggunakan huruf kecil.
+    - Jangan akhiri baris judul commit dengan tanda titik.
+    - Batasi panjang baris judul commit maksimal 72 karakter.
 
 3. **Body (Opsional)**:
-   - Gunakan body jika memerlukan penjelasan tambahan mengenai alasan latar belakang (*why*) dan konsekuensi perubahan.
+    - Gunakan body jika memerlukan penjelasan tambahan mengenai alasan latar belakang (_why_) dan konsekuensi perubahan.
 
 4. **Breaking Changes**:
-   - Jika ada perubahan yang merusak kompatibilitas (breaking change), tambahkan tanda seru `!` setelah type/scope (misal: `feat(api)!: mengubah format response JSON`) ATAU tambahkan footer `BREAKING CHANGE: <penjelasan>` di bagian paling bawah.
-   - Berpengaruh pada kenaikan MAJOR version (`vX.0.0`).
+    - Jika ada perubahan yang merusak kompatibilitas (breaking change), tambahkan tanda seru `!` setelah type/scope (misal: `feat(api)!: mengubah format response JSON`) ATAU tambahkan footer `BREAKING CHANGE: <penjelasan>` di bagian paling bawah.
+    - Berpengaruh pada kenaikan MAJOR version (`vX.0.0`).
 
 ---
 
 ## Examples
 
 **Good Examples:**
+
 ```text
 feat(auth): menambahkan fitur login dengan OAuth Google
 fix(url): memperbaiki error panic saat statistik klik bernilai null
@@ -100,6 +101,7 @@ refactor(db): mengoptimalkan kueri pencarian statistik analytics
 ```
 
 **Breaking Change Example:**
+
 ```text
 feat(api)!: mengubah format response JSON untuk endpoint v1/urls
 
@@ -107,6 +109,7 @@ BREAKING CHANGE: Struktur response JSON untuk endpoint /v1/urls diubah dari arra
 ```
 
 **Bad Examples (Avoid These):**
+
 ```text
 feat: tambah fitur login       # Jangan gunakan kalimat pasif/singkat tak baku
 fix: benerin bug               # Jangan gunakan bahasa gaul / slang

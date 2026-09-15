@@ -36,13 +36,14 @@ export default function InviteMemberModal({
     open,
     onOpenChange,
 }: Props) {
-    const [inviteRole, setInviteRole] = useState<RoleOption['value']>('member');
+    const defaultRole = availableRoles[0]?.value || 'member';
+    const [inviteRole, setInviteRole] = useState<RoleOption['value']>(defaultRole);
 
     const handleOpenChange = (nextOpen: boolean) => {
         onOpenChange(nextOpen);
 
         if (!nextOpen) {
-            setInviteRole('member');
+            setInviteRole(availableRoles[0]?.value || 'member');
         }
     };
 
@@ -51,7 +52,8 @@ export default function InviteMemberModal({
             <DialogContent>
                 <Form
                     key={String(open)}
-                    {...storeInvitation.form(team.slug)}
+                    action={storeInvitation.url(team.slug)}
+                    method="post"
                     className="space-y-6"
                     onSuccess={() => onOpenChange(false)}
                 >
@@ -116,7 +118,7 @@ export default function InviteMemberModal({
                                 <Button
                                     type="submit"
                                     data-test="invite-submit"
-                                    disabled={processing}
+                                    loading={processing}
                                 >
                                     Send invitation
                                 </Button>

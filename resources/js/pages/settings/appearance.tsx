@@ -12,9 +12,9 @@ export default function Appearance() {
 
             <div className="space-y-6">
                 <Heading
-                    variant="small"
-                    title="Appearance settings"
-                    description="Update the appearance settings for your account"
+                    badge="UI & Preferences"
+                    title="Appearance Settings"
+                    description="Customize light, dark, or system theme mode for your account"
                 />
                 <AppearanceTabs />
             </div>

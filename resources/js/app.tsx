@@ -5,8 +5,9 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import TeamLayout from '@/layouts/team/layout';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'TodoCraft';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -16,9 +17,12 @@ void createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
-            case name.startsWith('settings/'):
-            case name.startsWith('teams/'):
+            case name === 'settings/profile':
+            case name === 'settings/security':
+            case name === 'settings/appearance':
                 return [AppLayout, SettingsLayout];
+            case name.startsWith('teams/'):
+                return [AppLayout, TeamLayout];
             default:
                 return AppLayout;
         }
@@ -33,7 +37,10 @@ void createInertiaApp({
         );
     },
     progress: {
-        color: '#4B5563',
+        delay: 0,
+        color: '#d97757',
+        includeCSS: true,
+        showSpinner: true,
     },
 });
 

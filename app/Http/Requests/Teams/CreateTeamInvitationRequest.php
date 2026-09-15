@@ -8,6 +8,7 @@ use App\Rules\UniqueTeamInvitation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class CreateTeamInvitationRequest extends FormRequest
 {
@@ -22,9 +23,18 @@ class CreateTeamInvitationRequest extends FormRequest
 
         abort_if(! $team instanceof Team, 404);
 
+        $allowedRoles = array_unique(array_merge(
+            array_column(TeamRole::assignable(), 'value'),
+            Role::where('team_id', $team->id)->pluck('name')->toArray()
+        ));
+
         return [
             'email' => ['required', 'string', 'email', 'max:255', new UniqueTeamInvitation($team)],
-            'role' => ['required', 'string', Rule::enum(TeamRole::class)],
+            'role' => [
+                'required',
+                'string',
+                Rule::in($allowedRoles),
+            ],
         ];
     }
 }

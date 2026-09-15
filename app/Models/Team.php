@@ -35,10 +35,8 @@ class Team extends Model
     /**
      * Bootstrap the model and its traits.
      */
-    protected static function boot(): void
+    protected static function booted(): void
     {
-        parent::boot();
-
         static::creating(function (Team $team) {
             if (empty($team->slug)) {
                 $team->slug = static::generateUniqueTeamSlug($team->name);

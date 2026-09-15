@@ -12,6 +12,12 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request, Team $currentTeam): Response
     {
+        abort_unless(
+            $request->user()->ownsTeam($currentTeam) || $request->user()->hasTeamPermission($currentTeam, 'activity_log.view'),
+            403,
+            __('You do not have permission to view activity logs.')
+        );
+
         $activities = Activity::with('causer')
             ->latest()
             ->paginate(20)

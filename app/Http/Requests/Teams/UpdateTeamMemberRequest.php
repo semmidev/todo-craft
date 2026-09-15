@@ -3,9 +3,11 @@
 namespace App\Http\Requests\Teams;
 
 use App\Enums\TeamRole;
+use App\Models\Team;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class UpdateTeamMemberRequest extends FormRequest
 {
@@ -16,8 +18,21 @@ class UpdateTeamMemberRequest extends FormRequest
      */
     public function rules(): array
     {
+        $team = $this->route('team');
+
+        abort_if(! $team instanceof Team, 404);
+
+        $allowedRoles = array_unique(array_merge(
+            array_column(TeamRole::assignable(), 'value'),
+            Role::where('team_id', $team->id)->pluck('name')->toArray()
+        ));
+
         return [
-            'role' => ['required', 'string', Rule::in(array_column(TeamRole::assignable(), 'value'))],
+            'role' => [
+                'required',
+                'string',
+                Rule::in($allowedRoles),
+            ],
         ];
     }
 }

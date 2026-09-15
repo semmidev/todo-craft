@@ -99,13 +99,14 @@ export default function TeamEdit({
                     {permissions.canUpdateTeam ? (
                         <>
                             <Heading
-                                variant="small"
-                                title="Team settings"
-                                description="Update your team name and settings"
+                                badge="Team Administration"
+                                title="Team Settings"
+                                description={`Update your team name, member list, and pending invitations for ${team.name}.`}
                             />
 
                             <Form
-                                {...update.form(team.slug)}
+                                action={update.url(team.slug)}
+                                method="patch"
                                 className="space-y-6"
                             >
                                 {({ errors, processing }) => (
@@ -128,7 +129,7 @@ export default function TeamEdit({
                                             <Button
                                                 type="submit"
                                                 data-test="team-save-button"
-                                                disabled={processing}
+                                                loading={processing}
                                             >
                                                 Save
                                             </Button>

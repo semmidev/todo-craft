@@ -2,9 +2,10 @@
 
 namespace App\Policies;
 
-use App\Enums\TeamPermission;
+use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\User;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class TeamPolicy
 {
@@ -37,7 +38,10 @@ class TeamPolicy
      */
     public function update(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::UpdateTeam);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->userHasPermission($user, 'teams.update'));
     }
 
     /**
@@ -55,7 +59,10 @@ class TeamPolicy
      */
     public function addMember(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::AddMember);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->userHasPermission($user, 'teams.members.manage'));
     }
 
     /**
@@ -63,7 +70,10 @@ class TeamPolicy
      */
     public function updateMember(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::UpdateMember);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->userHasPermission($user, 'teams.members.manage'));
     }
 
     /**
@@ -71,15 +81,24 @@ class TeamPolicy
      */
     public function removeMember(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::RemoveMember);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->userHasPermission($user, 'teams.members.manage'));
     }
 
     /**
      * Determine whether the user can invite members to the team.
      */
+    /**
+     * Determine whether the user can invite members to the team.
+     */
     public function inviteMember(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::CreateInvitation);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->isAtLeastAdmin($user, $team) || $this->userHasPermission($user, 'teams.invitations.manage'));
     }
 
     /**
@@ -87,7 +106,23 @@ class TeamPolicy
      */
     public function cancelInvitation(User $user, Team $team): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::CancelInvitation);
+        setPermissionsTeamId($team->id);
+
+        return $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->isAtLeastAdmin($user, $team) || $this->userHasPermission($user, 'teams.invitations.manage'));
+    }
+
+    /**
+     * Check if user role is at least Admin.
+     */
+    private function isAtLeastAdmin(User $user, Team $team): bool
+    {
+        $role = $user->teamRole($team);
+        if ($role instanceof TeamRole) {
+            return $role->isAtLeast(TeamRole::Admin);
+        }
+
+        return in_array($role, ['owner', 'admin'], true);
     }
 
     /**
@@ -95,6 +130,22 @@ class TeamPolicy
      */
     public function delete(User $user, Team $team): bool
     {
-        return ! $team->is_personal && $user->hasTeamPermission($team, TeamPermission::DeleteTeam);
+        setPermissionsTeamId($team->id);
+
+        return ! $team->is_personal
+            && $user->belongsToTeam($team)
+            && ($user->ownsTeam($team) || $this->userHasPermission($user, 'teams.delete'));
+    }
+
+    /**
+     * Safely check if user has permission without throwing PermissionDoesNotExist exception.
+     */
+    private function userHasPermission(User $user, string $permission): bool
+    {
+        try {
+            return $user->hasPermissionTo($permission);
+        } catch (PermissionDoesNotExist) {
+            return false;
+        }
     }
 }

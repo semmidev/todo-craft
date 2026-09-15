@@ -13,7 +13,7 @@ class TodoPolicy
      */
     public function viewAny(User $user, Team $team): bool
     {
-        return $user->belongsToTeam($team) && $user->hasPermissionTo('view todos');
+        return $user->belongsToTeam($team) && ($user->ownsTeam($team) || $user->hasTeamPermission($team, 'todos.view'));
     }
 
     /**
@@ -21,7 +21,7 @@ class TodoPolicy
      */
     public function view(User $user, Todo $todo): bool
     {
-        return $user->belongsToTeam($todo->team) && $user->hasPermissionTo('view todos');
+        return $user->belongsToTeam($todo->team) && ($user->ownsTeam($todo->team) || $user->hasTeamPermission($todo->team, 'todos.view'));
     }
 
     /**
@@ -29,7 +29,7 @@ class TodoPolicy
      */
     public function create(User $user, Team $team): bool
     {
-        return $user->belongsToTeam($team) && $user->hasPermissionTo('create todos');
+        return $user->belongsToTeam($team) && ($user->ownsTeam($team) || $user->hasTeamPermission($team, 'todos.create'));
     }
 
     /**
@@ -37,7 +37,7 @@ class TodoPolicy
      */
     public function update(User $user, Todo $todo): bool
     {
-        return $user->belongsToTeam($todo->team) && $user->hasPermissionTo('edit todos');
+        return $user->belongsToTeam($todo->team) && ($user->ownsTeam($todo->team) || $user->hasTeamPermission($todo->team, 'todos.update'));
     }
 
     /**
@@ -45,6 +45,6 @@ class TodoPolicy
      */
     public function delete(User $user, Todo $todo): bool
     {
-        return $user->belongsToTeam($todo->team) && $user->hasPermissionTo('delete todos');
+        return $user->belongsToTeam($todo->team) && ($user->ownsTeam($todo->team) || $user->hasTeamPermission($todo->team, 'todos.delete'));
     }
 }

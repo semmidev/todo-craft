@@ -1,7 +1,9 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Plus, Tag, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Tag, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
+import ConfirmDialog from '@/components/confirm-dialog';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 
 interface Category {
     id: number;
@@ -21,8 +23,13 @@ interface PageProps {
     };
 }
 
-export default function CategoriesIndex({ categories, currentTeam }: PageProps) {
+export default function CategoriesIndex({
+    categories,
+    currentTeam,
+}: PageProps) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -40,69 +47,91 @@ export default function CategoriesIndex({ categories, currentTeam }: PageProps) 
         });
     };
 
-    const handleDelete = (categoryId: number) => {
-        if (confirm('Are you sure you want to delete this category?')) {
-            router.delete(`/${currentTeam.slug}/categories/${categoryId}`, { preserveScroll: true });
-        }
+    const executeDelete = () => {
+        if (!deletingCategory) return;
+        setDeletingId(deletingCategory.id);
+        router.delete(`/${currentTeam.slug}/categories/${deletingCategory.id}`, {
+            preserveScroll: true,
+            onFinish: () => {
+                setDeletingId(null);
+                setDeletingCategory(null);
+            },
+        });
     };
 
-    const presetColors = ['#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'];
+    const presetColors = [
+        '#3b82f6',
+        '#10b981',
+        '#ef4444',
+        '#8b5cf6',
+        '#f59e0b',
+        '#ec4899',
+        '#6366f1',
+    ];
 
     return (
         <>
             <Head title="Categories - Todo App" />
 
-            <div className="space-y-6 p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Todo Categories</h1>
-                        <p className="text-muted-foreground text-sm mt-1">
-                            Group and organize your team tasks into visual categories.
-                        </p>
-                    </div>
-
-                    <button
+            <div className="w-full flex-1 space-y-8 p-6 lg:p-8">
+                <Heading
+                    badge="Task Organization"
+                    title="Todo Categories"
+                    description={`Group and organize your team tasks into visual categories for ${currentTeam.name}.`}
+                >
+                    <Button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold px-4 py-2.5 rounded-xl shadow hover:bg-primary/90 transition"
+                        className="cursor-pointer"
                     >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="size-4" />
                         Create Category
-                    </button>
-                </div>
+                    </Button>
+                </Heading>
 
                 {categories.length === 0 ? (
-                    <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
-                        <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <h3 className="text-lg font-semibold">No categories yet</h3>
-                        <p className="text-muted-foreground text-sm mt-1">
+                    <div className="bg-card border-border rounded-2xl border border-dashed p-12 text-center">
+                        <Tag className="text-muted-foreground mx-auto mb-4 h-12 w-12 opacity-50" />
+                        <h3 className="text-lg font-semibold">
+                            No categories yet
+                        </h3>
+                        <p className="text-muted-foreground mt-1 text-sm">
                             Create your first category to group your todo tasks.
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {categories.map((cat) => (
                             <div
                                 key={cat.id}
-                                className="bg-card border border-border p-5 rounded-2xl shadow-xs flex items-center justify-between group hover:border-primary/40 transition"
+                                className="bg-card border-border group hover:border-primary/40 flex items-center justify-between rounded-2xl border p-5 shadow-xs transition"
                             >
                                 <div className="flex items-center gap-3">
                                     <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-xs"
+                                        className="flex h-10 w-10 items-center justify-center rounded-xl font-bold text-white shadow-xs"
                                         style={{ backgroundColor: cat.color }}
                                     >
-                                        <Tag className="w-5 h-5" />
+                                        <Tag className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-base">{cat.name}</div>
-                                        <div className="text-muted-foreground text-xs">{cat.todos_count} tasks</div>
+                                        <div className="text-base font-bold">
+                                            {cat.name}
+                                        </div>
+                                        <div className="text-muted-foreground text-xs">
+                                            {cat.todos_count} tasks
+                                        </div>
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={() => handleDelete(cat.id)}
-                                    className="text-muted-foreground hover:text-destructive p-2 rounded-lg opacity-0 group-hover:opacity-100 transition"
+                                    onClick={() => setDeletingCategory(cat)}
+                                    disabled={deletingId === cat.id}
+                                    className="text-muted-foreground hover:text-destructive rounded-lg p-2 transition group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    {deletingId === cat.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Trash2 className="h-4 w-4" />
+                                    )}
                                 </button>
                             </div>
                         ))}
@@ -112,39 +141,57 @@ export default function CategoriesIndex({ categories, currentTeam }: PageProps) 
 
             {/* Create Category Modal */}
             {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-                    <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+                    <div className="bg-card border-border w-full max-w-md space-y-4 rounded-2xl border p-6 shadow-2xl">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold">New Category</h2>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-muted-foreground font-bold">
+                            <button
+                                onClick={() => setIsCreateModalOpen(false)}
+                                className="text-muted-foreground font-bold cursor-pointer"
+                            >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateSubmit} className="space-y-4">
+                        <form
+                            onSubmit={handleCreateSubmit}
+                            className="space-y-4"
+                        >
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider mb-1">Category Name *</label>
+                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                    Category Name *
+                                </label>
                                 <input
                                     type="text"
                                     required
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="e.g. Design System"
-                                    className="w-full px-3 py-2 bg-background border border-input rounded-lg text-sm"
+                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
                                 />
-                                {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
+                                {errors.name && (
+                                    <p className="text-destructive mt-1 text-xs">
+                                        {errors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider mb-2">Badge Color</label>
+                                <label className="mb-2 block text-xs font-semibold tracking-wider uppercase">
+                                    Badge Color
+                                </label>
                                 <div className="flex items-center gap-2">
                                     {presetColors.map((c) => (
                                         <button
                                             key={c}
                                             type="button"
                                             onClick={() => setData('color', c)}
-                                            className={`w-8 h-8 rounded-full border-2 transition ${
-                                                data.color === c ? 'scale-110 border-foreground' : 'border-transparent'
+                                            className={`h-8 w-8 rounded-full border-2 transition cursor-pointer ${
+                                                data.color === c
+                                                    ? 'border-foreground scale-110'
+                                                    : 'border-transparent'
                                             }`}
                                             style={{ backgroundColor: c }}
                                         />
@@ -152,41 +199,58 @@ export default function CategoriesIndex({ categories, currentTeam }: PageProps) 
                                     <input
                                         type="color"
                                         value={data.color}
-                                        onChange={(e) => setData('color', e.target.value)}
-                                        className="w-8 h-8 rounded-full cursor-pointer bg-transparent border-0"
+                                        onChange={(e) =>
+                                            setData('color', e.target.value)
+                                        }
+                                        className="h-8 w-8 cursor-pointer rounded-full border-0 bg-transparent"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-4 flex justify-end gap-2 border-t border-border">
-                                <button
+                            <div className="border-border flex justify-end gap-2 border-t pt-4">
+                                <Button
                                     type="button"
+                                    variant="secondary"
                                     onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium"
                                 >
                                     Cancel
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="submit"
-                                    disabled={processing}
-                                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90"
+                                    loading={processing}
                                 >
                                     Save Category
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
+            {/* Delete Category Confirmation Dialog */}
+            <ConfirmDialog
+                open={deletingCategory !== null}
+                onOpenChange={(open) => {
+                    if (!open) setDeletingCategory(null);
+                }}
+                title="Delete Category"
+                description={`Are you sure you want to delete "${deletingCategory?.name}"? Tasks associated with this category will remain.`}
+                loading={deletingId !== null}
+                onConfirm={executeDelete}
+            />
         </>
     );
 }
 
-CategoriesIndex.layout = (props: { currentTeam?: { slug: string } | null }) => ({
+CategoriesIndex.layout = (props: {
+    currentTeam?: { slug: string } | null;
+}) => ({
     breadcrumbs: [
         {
             title: 'Categories',
-            href: props.currentTeam ? `/${props.currentTeam.slug}/categories` : '#',
+            href: props.currentTeam
+                ? `/${props.currentTeam.slug}/categories`
+                : '#',
         },
     ],
 });

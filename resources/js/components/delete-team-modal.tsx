@@ -40,7 +40,8 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
             <DialogContent>
                 <Form
                     key={String(open)}
-                    {...destroy.form(team.slug)}
+                    action={destroy.url(team.slug)}
+                    method="delete"
                     className="space-y-6"
                     onSuccess={() => handleOpenChange(false)}
                 >
@@ -87,7 +88,8 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                     variant="destructive"
                                     type="submit"
                                     data-test="delete-team-confirm"
-                                    disabled={!canDeleteTeam || processing}
+                                    disabled={!canDeleteTeam}
+                                    loading={processing}
                                 >
                                     Delete team
                                 </Button>

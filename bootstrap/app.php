@@ -3,11 +3,13 @@
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetTeamUrlDefaults;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,7 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'livewire/*',
             'livewire-*',
-            'horizon/*',
         ]);
 
         $middleware->web(append: [
@@ -32,6 +33,29 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (UniqueConstraintViolationException $e, Request $request) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => __('Data with this identifier already exists. Please choose a different name or value.'),
+            ]);
+
+            return back()->withErrors([
+                'name' => __('This value has already been taken.'),
+                'error' => __('Data already exists (duplicate entry).'),
+            ]);
+        });
+
+        $exceptions->respond(function ($response, Throwable $exception, Request $request) {
+            if ($response->getStatusCode() === 403 && ! $request->is('api/*')) {
+                return Inertia::render('error', [
+                    'status' => 403,
+                    'message' => $exception->getMessage() ?: __('You do not have permission to access this resource or perform this action in this team space.'),
+                ])->toResponse($request)->setStatusCode(403);
+            }
+
+            return $response;
+        });
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
