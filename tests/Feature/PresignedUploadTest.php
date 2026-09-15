@@ -38,6 +38,17 @@ test('authenticated user can request presigned upload url', function () {
         ]);
 });
 
+test('presigned upload url accepts files up to 100mb', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('upload.presigned-url'), [
+            'filename' => 'large-video.mp4',
+            'file_type' => 'video/mp4',
+            'size' => 104857600, // 100 MB
+        ]);
+
+    $response->assertStatus(200);
+});
+
 test('guest user cannot request presigned upload url', function () {
     $response = $this->postJson(route('upload.presigned-url'), [
         'filename' => 'test-document.pdf',

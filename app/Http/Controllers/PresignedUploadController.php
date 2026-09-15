@@ -19,7 +19,7 @@ class PresignedUploadController extends Controller
         $validated = $request->validate([
             'filename' => ['required', 'string', 'max:255'],
             'file_type' => ['required', 'string', 'max:127'],
-            'size' => ['required', 'integer', 'max:26214400'], // 25 MB max
+            'size' => ['required', 'integer', 'max:104857600'], // 100 MB max
         ]);
 
         $uuid = (string) Str::uuid();
