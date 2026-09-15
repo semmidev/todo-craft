@@ -14,6 +14,7 @@ import {
 import { FormEvent, useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import { formatUserDateTime } from '@/lib/date-utils';
 
 interface Category {
@@ -82,6 +83,7 @@ interface PageProps {
 }
 
 export default function TodoShow({ todo, currentTeam }: PageProps) {
+    const { uploadMultiple, isUploading: isPresignedUploading, progress } = usePresignedUpload();
     const [isUploading, setIsUploading] = useState(false);
     const [isSubmittingUpload, setIsSubmittingUpload] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
@@ -94,25 +96,34 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
         );
     };
 
-    const handleUploadFiles = (e: FormEvent) => {
+    const handleUploadFiles = async (e: FormEvent) => {
         e.preventDefault();
         if (files.length === 0) return;
 
         setIsSubmittingUpload(true);
-        const formData = new FormData();
-        files.forEach((f) => formData.append('attachments[]', f));
-        formData.append('title', todo.title);
-        formData.append('status', todo.status);
-        formData.append('priority', todo.priority);
-        formData.append('_method', 'PUT');
+        try {
+            const uploadResults = await uploadMultiple(files);
+            const attachmentKeys = uploadResults.map((res) => ({ key: res.key }));
 
-        router.post(`/${currentTeam.slug}/todos/${todo.id}`, formData, {
-            onSuccess: () => {
-                setFiles([]);
-                setIsUploading(false);
-            },
-            onFinish: () => setIsSubmittingUpload(false),
-        });
+            router.put(
+                `/${currentTeam.slug}/todos/${todo.id}`,
+                {
+                    title: todo.title,
+                    status: todo.status,
+                    priority: todo.priority,
+                    attachment_keys: attachmentKeys,
+                },
+                {
+                    onSuccess: () => {
+                        setFiles([]);
+                        setIsUploading(false);
+                    },
+                    onFinish: () => setIsSubmittingUpload(false),
+                },
+            );
+        } catch {
+            setIsSubmittingUpload(false);
+        }
     };
 
     return (
@@ -245,13 +256,27 @@ export default function TodoShow({ todo, currentTeam }: PageProps) {
                                         }
                                         className="w-full text-xs"
                                     />
+                                    {isPresignedUploading && (
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                                <span>Mengunggah via Presigned URL...</span>
+                                                <span>{progress}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                                                <div
+                                                    className="h-full bg-primary transition-all duration-300"
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                     <Button
                                         type="submit"
                                         size="sm"
-                                        loading={isSubmittingUpload}
-                                        disabled={files.length === 0}
+                                        loading={isSubmittingUpload || isPresignedUploading}
+                                        disabled={files.length === 0 || isPresignedUploading}
                                     >
-                                        Upload
+                                        Upload via Presigned URL
                                     </Button>
                                 </form>
                             )}

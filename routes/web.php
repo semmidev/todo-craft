@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PresignedUploadController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\TodoController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -28,8 +29,11 @@ Route::prefix('{current_team}')
     });
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('upload/presigned-url', [PresignedUploadController::class, 'generateUrl'])->name('upload.presigned-url');
     Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
 });
+
+Route::put('upload/local/{uuid}/{filename}', [PresignedUploadController::class, 'uploadLocal'])->name('upload.local');
 
 require __DIR__.'/settings.php';

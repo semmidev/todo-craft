@@ -11,6 +11,7 @@ use App\Models\TodoItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -103,11 +104,7 @@ class TodoController extends Controller
             'due_date' => $dueDate,
         ]);
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $todo->addMedia($file)->toMediaCollection('attachments');
-            }
-        }
+        $this->attachUploadedFiles($todo, $request);
 
         if ($request->filled('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $index => $itemData) {
@@ -168,11 +165,7 @@ class TodoController extends Controller
             'completed_at' => $completedAt,
         ]);
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $todo->addMedia($file)->toMediaCollection('attachments');
-            }
-        }
+        $this->attachUploadedFiles($todo, $request);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Tugas todo berhasil diperbarui.')]);
 
@@ -226,5 +219,35 @@ class TodoController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Item daftar periksa berhasil diperbarui.')]);
 
         return back();
+    }
+
+    /**
+     * Attach uploaded files (via presigned keys or direct upload fallback) to the todo.
+     */
+    private function attachUploadedFiles(Todo $todo, Request $request): void
+    {
+        if ($request->filled('attachment_keys') && is_array($request->input('attachment_keys'))) {
+            $diskName = config('filesystems.default', 'local');
+            $storage = Storage::disk($diskName);
+
+            foreach ($request->input('attachment_keys') as $keyItem) {
+                $key = is_array($keyItem) ? ($keyItem['key'] ?? null) : $keyItem;
+                if (! $key || ! $storage->exists($key)) {
+                    continue;
+                }
+
+                if ($diskName === 's3') {
+                    $todo->addMediaFromDisk($key, 's3')->toMediaCollection('attachments');
+                } else {
+                    $todo->addMedia($storage->path($key))->toMediaCollection('attachments');
+                }
+            }
+        }
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $todo->addMedia($file)->toMediaCollection('attachments');
+            }
+        }
     }
 }
