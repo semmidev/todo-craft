@@ -79,14 +79,23 @@ class PresignedUploadController extends Controller
         }
 
         $key = "tmp/{$uuid}/{$filename}";
-        $content = $request->getContent();
+        $stream = fopen('php://input', 'rb');
 
-        Storage::disk(config('filesystems.default', 'local'))->put($key, $content);
+        if ($stream === false) {
+            return response()->json(['message' => 'Unable to read upload stream.'], 500);
+        }
+
+        $disk = Storage::disk(config('filesystems.default', 'local'));
+        $disk->writeStream($key, $stream);
+
+        if (is_resource($stream)) {
+            fclose($stream);
+        }
 
         return response()->json([
             'success' => true,
             'key' => $key,
-            'size' => strlen($content),
+            'size' => $disk->size($key),
         ]);
     }
 }

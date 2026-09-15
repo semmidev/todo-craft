@@ -226,6 +226,8 @@ class TodoController extends Controller
      */
     private function attachUploadedFiles(Todo $todo, Request $request): void
     {
+        @ini_set('memory_limit', '512M');
+
         if ($request->filled('attachment_keys') && is_array($request->input('attachment_keys'))) {
             $diskName = config('filesystems.default', 'local');
             $storage = Storage::disk($diskName);

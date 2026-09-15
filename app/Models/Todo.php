@@ -53,6 +53,10 @@ class Todo extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
+        if ($media && (! str_starts_with($media->mime_type ?? '', 'image/') || $media->size > 15 * 1024 * 1024)) {
+            return;
+        }
+
         $this->addMediaConversion('thumb')
             ->width(300)
             ->height(300)
