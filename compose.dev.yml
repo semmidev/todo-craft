@@ -50,7 +50,8 @@ services:
         container_name: laravel-rustfs
         restart: unless-stopped
         ports:
-            - '9000:9000' # S3 API & Web Console
+            - '9000:9000' # S3 API
+            - '9001:9001' # Web Console
         environment:
             RUSTFS_ROOT_USER: 'admin'
             RUSTFS_ROOT_PASSWORD: 'password123'

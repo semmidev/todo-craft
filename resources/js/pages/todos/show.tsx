@@ -17,16 +17,7 @@ import { Button } from '@/components/ui/button';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import { formatUserDateTime } from '@/lib/date-utils';
 
-function extractId(val: any): string | number {
-    if (val === null || val === undefined) return '';
-    if (typeof val === 'number' || typeof val === 'string') return val;
-    if (typeof val === 'object') {
-        if ('id' in val) return extractId(val.id);
-        if ('value' in val) return extractId(val.value);
-        if ('data' in val) return extractId(val.data);
-    }
-    return '';
-}
+
 
 interface Category {
     id: number;
@@ -99,7 +90,8 @@ export default function TodoShow(props: PageProps) {
     const todo = props.todo || page.props.todo;
 
     const teamSlug = currentTeam?.slug || page.props.currentTeam?.slug || '';
-    const todoId = extractId(todo);
+    const todoId = typeof todo?.id === 'number' || typeof todo?.id === 'string' ? todo.id : '';
+
 
     const { uploadMultiple, isUploading: isPresignedUploading, progress } = usePresignedUpload();
     const [isUploading, setIsUploading] = useState(false);
@@ -448,7 +440,7 @@ TodoShow.layout = (props: {
             title: props.todo?.title ?? 'Todo Detail',
             href:
                 props.currentTeam && props.todo
-                    ? `/${props.currentTeam.slug}/todos/${extractId(props.todo)}`
+                    ? `/${props.currentTeam.slug}/todos/${props.todo.id}`
                     : '#',
         },
     ],

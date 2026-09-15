@@ -986,30 +986,42 @@ export default function TodosIndex({
                                 <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                     Lampiran File
                                 </label>
-                                <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) => {
-                                        if (e.target.files) {
-                                            setCreateFiles(Array.from(e.target.files));
-                                        }
-                                    }}
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-xs"
-                                />
-                                {isPresignedUploading && (
-                                    <div className="mt-2 space-y-1">
-                                        <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                                            <span>Mengunggah berkas...</span>
-                                            <span>{progress}%</span>
+                                <div className="bg-accent/20 border-border space-y-3 rounded-xl border p-4">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => {
+                                            if (e.target.files) {
+                                                setCreateFiles(Array.from(e.target.files));
+                                            }
+                                        }}
+                                        className="w-full text-xs"
+                                    />
+                                    {createFiles.length > 0 && (
+                                        <div className="space-y-1">
+                                            {createFiles.map((file, idx) => (
+                                                <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span className="truncate font-medium">{file.name}</span>
+                                                    <span className="ml-2 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                                            <div
-                                                className="h-full bg-primary transition-all duration-300"
-                                                style={{ width: `${progress}%` }}
-                                            />
+                                    )}
+                                    {isPresignedUploading && (
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                                <span>Mengunggah berkas...</span>
+                                                <span>{progress}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                                                <div
+                                                    className="h-full bg-primary transition-all duration-300"
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
 
                             <div className="border-border flex justify-end gap-2 border-t pt-4">

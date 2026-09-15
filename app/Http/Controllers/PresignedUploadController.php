@@ -33,19 +33,24 @@ class PresignedUploadController extends Controller
         if ($diskName === 's3') {
             /** @var FilesystemAdapter $disk */
             $disk = Storage::disk('s3');
-            $uploadUrl = $disk->temporaryUploadUrl(
+            $presigned = $disk->temporaryUploadUrl(
                 $key,
                 now()->addMinutes(15),
-                ['ResponseContentType' => $validated['file_type']]
+                ['ContentType' => $validated['file_type']]
             );
+
+            // temporaryUploadUrl returns ['url' => '...', 'headers' => [...]]
+            $uploadUrl = is_array($presigned) ? ($presigned['url'] ?? $presigned[0] ?? '') : $presigned;
+            $presignedHeaders = is_array($presigned) ? ($presigned['headers'] ?? []) : [];
 
             return response()->json([
                 'upload_url' => $uploadUrl,
                 'key' => $key,
                 'disk' => 's3',
-                'headers' => [
-                    'Content-Type' => $validated['file_type'],
-                ],
+                'headers' => array_merge(
+                    ['Content-Type' => $validated['file_type']],
+                    $presignedHeaders,
+                ),
             ]);
         }
 

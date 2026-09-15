@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'livewire/*',
             'livewire-*',
+            'upload/local/*',
         ]);
 
         $middleware->web(append: [

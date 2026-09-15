@@ -39,7 +39,20 @@ export function usePresignedUpload() {
                 throw new Error(errData.message || 'Gagal mendapatkan URL presigned upload.');
             }
 
-            const { upload_url, key, headers } = await response.json();
+            const data = await response.json();
+
+
+            // Handle both string URL and object { url, headers } from temporaryUploadUrl
+            const rawUploadUrl = data.upload_url;
+            const upload_url: string = typeof rawUploadUrl === 'string'
+                ? rawUploadUrl
+                : (rawUploadUrl?.url ?? '');
+            const key: string = data.key;
+            const headers: Record<string, string> = {
+                ...(data.headers || {}),
+                ...(typeof rawUploadUrl === 'object' && rawUploadUrl?.headers ? rawUploadUrl.headers : {}),
+            };
+
 
             // Step 2: Directly upload file binary payload via PUT request to presigned URL
             await new Promise<void>((resolve, reject) => {
@@ -48,7 +61,12 @@ export function usePresignedUpload() {
 
                 if (headers) {
                     Object.entries(headers).forEach(([hKey, hVal]) => {
-                        xhr.setRequestHeader(hKey, hVal as string);
+                        // Skip Host header — browsers disallow setting it
+                        if (hKey.toLowerCase() === 'host') return;
+                        const val = Array.isArray(hVal) ? hVal[0] : hVal;
+                        if (typeof val === 'string') {
+                            xhr.setRequestHeader(hKey, val);
+                        }
                     });
                 }
 
