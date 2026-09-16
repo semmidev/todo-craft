@@ -1,16 +1,21 @@
-# Technical Documentation — TodoCraft
+# Technical Documentation & Developer Guide — TodoCraft
 
-Dokumentasi teknis untuk pengoperasian, konfigurasi environment, pengujian, panduan alur pengembangan fitur baru, dan arsitektur aplikasi **TodoCraft**.
+Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur aplikasi, panduan pengembangan fitur baru, serta manajemen permission untuk aplikasi **TodoCraft**.
 
 ---
 
 ## 📌 Daftar Isi
 
-- [🛠️ Tech Stack](#️-tech-stack)
+- [🛠️ Tech Stack & Dependencies](#️-tech-stack--dependencies)
 - [📋 Prasyarat Sistem](#-prasyarat-sistem)
 - [🐳 Docker & Makefile Workflows](#-docker--makefile-workflows)
 - [⚙️ Setup Environment & Pengoperasian Lokal](#️-setup-environment--pengoperasian-lokal)
 - [⏰ Background Scheduler & Task Runner](#-background-scheduler--task-runner)
+- [🔄 Urutan Eksekusi Request (Request Lifecycle)](#-urutan-eksekusi-request-request-lifecycle)
+- [🔑 Panduan Manajemen Permission (Menambah & Synchronize Permission)](#-panduan-manajemen-permission-menambah--synchronize-permission)
+  - [1. Tempat Mendefinisikan Permission Baru](#1-tempat-mendefinisikan-permission-baru)
+  - [2. Sinkronisasi Permission ke Database Tanpa Menghapus Data Lama](#2-sinkronisasi-permission-ke-database-tanpa-menghapus-data-lama)
+  - [3. Penambahan Permission ke Tim yang Sudah Ada (Existing Teams)](#3-penambahan-permission-ke-tim-yang-sudah-ada-existing-teams)
 - [🚀 Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)](#-panduan-pengembangan-fitur-baru-step-by-step-developer-guide)
   - [Langkah 1: Database Migration](#langkah-1-database-migration)
   - [Langkah 2: Model Eloquent, Enum, Casts & Relasi](#langkah-2-model-eloquent-enum-casts--relasi)
@@ -22,12 +27,25 @@ Dokumentasi teknis untuk pengoperasian, konfigurasi environment, pengujian, pand
   - [Langkah 8: Tipe TypeScript, Halaman React & Komponen UI](#langkah-8-tipe-typescript-halaman-react--komponen-ui)
   - [Langkah 9: Automated Testing dengan Pest PHP](#langkah-9-automated-testing-dengan-pest-php)
   - [Langkah 10: Formatting & Verifikasi Akhir](#langkah-10-formatting--verifikasi-akhir)
-- [🧪 Perintah Testing & Code Quality](#-perintah-testing--code-quality)
+- [📚 Panduan Komponen Arsitektur & Packages](#-panduan-komponen-arsitektur--packages)
+  - [1. Service Provider](#1-service-provider)
+  - [2. Routing & Route Model Binding](#2-routing--route-model-binding)
+  - [3. Middleware Stack](#3-middleware-stack)
+  - [4. Eloquent Model & Events](#4-eloquent-model--events)
+  - [5. Inertia.js + React (SPA tanpa API)](#5-inertiajs--react-spa-tanpa-api)
+  - [6. Spatie Data (DTO Modern)](#6-spatie-data-dto-modern)
+  - [7. Spatie Permission & Dynamic Team RBAC](#7-spatie-permission--dynamic-team-rbac)
+  - [8. Spatie MediaLibrary (Upload File)](#8-spatie-medialibrary-upload-file)
+  - [9. Spatie ActivityLog (Audit Trail)](#9-spatie-activitylog-audit-trail)
+  - [10. Spatie QueryBuilder (Filter & Sort Otomatis)](#10-spatie-querybuilder-filter--sort-otomatis)
+  - [11. Wayfinder (Type-safe Routes di Frontend)](#11-wayfinder-type-safe-routes-di-frontend)
+  - [12. Fitur PHP 8.x Modern](#12-fitur-php-8x-modern)
+- [🧪 Perintah Testing, Linting & Debugging](#-perintah-testing-linting--debugging)
 - [📁 Struktur Arsitektur Project](#-struktur-arsitektur-project)
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Dependencies
 
 - **Backend**: PHP 8.4, Laravel 11 / 13, Laravel Fortify, Laravel Socialite, Laravel Passkeys
 - **Frontend**: React 19, Inertia.js v3, TypeScript, Tailwind CSS v4, Radix UI, Framer Motion, Lucide Icons
@@ -141,9 +159,134 @@ php artisan schedule:work
 
 ---
 
-## 🚀 Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)
+## 🔄 Urutan Eksekusi Request (Request Lifecycle)
 
-Panduan ini berisi alur standar yang wajib diikuti oleh developer saat ingin menambahkan atau merombak fitur baru pada **TodoCraft**.
+Setiap request HTTP dari browser melewati tahapan eksekusi terstruktur berikut:
+
+```text
+Browser kirim request
+        │
+        ▼
+  public/index.php          ← Entry point tunggal semua request
+        │
+        ▼
+  bootstrap/app.php          ← Konfigurasi aplikasi dibaca:
+                               - withRouting() → route web.php, settings.php, console.php
+                               - withMiddleware() → CSRF, web stack
+                               - withExceptions() → error handling
+        │
+        ▼
+  bootstrap/providers.php    ← Service Provider di-register & di-boot:
+                               AppServiceProvider::register() / boot()
+                               FortifyServiceProvider::boot()
+        │
+        ▼
+  routes/web.php / settings.php ← URL dicocokkan dengan route terdaftar
+        │
+        ▼
+  Middleware Stack           ← Dijalankan secara berurutan:
+  (Global → Group → Route)    1. HandleAppearance (tema dark/light)
+                               2. HandleInertiaRequests (share data ke React)
+                               3. SetTeamUrlDefaults (default {current_team})
+                               4. auth (cek login)
+                               5. verified (cek email verified)
+                               6. EnsureTeamMembership (cek keanggotaan tim & scope permission)
+        │
+        ▼
+  Controller Method          ← Logika: authorize → query DB → return response
+        │
+        ▼
+  Response                   ← Inertia::render() → kirim JSON ke React SPA
+                               atau redirect() → redirect ke URL lain
+```
+
+---
+
+## 🔑 Panduan Manajemen Permission (Menambah & Synchronize Permission)
+
+Seluruh otorisasi di proyek ini berbasis **permission string dengan format dot notation (`resource.action`)** dan ter-scope per tim via Spatie Permission.
+
+### 1. Tempat Mendefinisikan Permission Baru
+
+Saat ingin membuat permission baru (misal: `reports.view` atau `projects.manage`), perbarui 3 file berikut:
+
+1. **`database/seeders/RoleAndPermissionSeeder.php`**:
+   Tambahkan string permission baru ke dalam array `public const PERMISSIONS`:
+   ```php
+   public const PERMISSIONS = [
+       'dashboard.view',
+       'teams.update',
+       // ...
+       'reports.view', // ← Tambahkan di sini
+   ];
+   ```
+
+2. **`app/Enums/TeamPermission.php`**:
+   Tambahkan case baru pada Backed Enum PHP:
+   ```php
+   enum TeamPermission: string
+   {
+       // ...
+       case ViewReports = 'reports.view';
+   }
+   ```
+
+3. **`app/Actions/Teams/CreateTeam.php`**:
+   Tentukan peran tim mana yang otomatis mendapatkan permission tersebut saat tim baru dibuat:
+   ```php
+   private const DEFAULT_ROLES = [
+       TeamRole::Owner->value => RoleAndPermissionSeeder::PERMISSIONS,
+       TeamRole::Admin->value => [
+           'teams.update',
+           // ...
+           'reports.view', // ← Tambahkan ke role Admin
+       ],
+       TeamRole::Member->value => [
+           // ...
+       ],
+   ];
+   ```
+
+---
+
+### 2. Sinkronisasi Permission ke Database Tanpa Menghapus Data Lama
+
+Untuk memasukkan permission baru ke database tanpa merusak atau menghapus data pengguna, tim, maupun permission yang sudah ada:
+
+```bash
+php artisan db:seed --class=RoleAndPermissionSeeder
+```
+
+**Mengapa AMAN & tidak menghapus data lama?**
+`RoleAndPermissionSeeder` menggunakan perintah `Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web'])`. Metode ini hanya membuat record baru jika nama permission belum ada di tabel `permissions`, dan membiarkan permission lama beserta relasi role/user yang sudah ada tetap utuh tanpa disentuh.
+
+---
+
+### 3. Penambahan Permission ke Tim yang Sudah Ada (Existing Teams)
+
+Seeder di atas menambahkan permission secara global di tabel `permissions`. Jika Anda ingin memberikan permission baru tersebut ke **role tim yang sudah dibuat sebelumnya di database**, jalankan snippet berikut via `php artisan tinker`:
+
+```php
+use App\Models\Team;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+
+app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+// Berikan permission baru ke role Admin di seluruh tim yang sudah ada
+Team::all()->each(function (Team $team) {
+    setPermissionsTeamId($team->id);
+    
+    $adminRole = Role::where('name', 'admin')->where('team_id', $team->id)->first();
+    if ($adminRole) {
+        $adminRole->givePermissionTo('reports.view');
+    }
+});
+```
+
+---
+
+## 🚀 Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)
 
 ```mermaid
 flowchart TD
@@ -196,9 +339,7 @@ php artisan make:seeder ProjectSeeder
 ---
 
 ### Langkah 4: Permission & Authorization Policy
-Semua otorisasi pada aplikasi TodoCraft berbasis **permission string konsisten dengan dot notation** (contoh: `projects.view`, `projects.create`).
-
-1. Daftarkan permission baru pada `database/seeders/RoleAndPermissionSeeder.php` (`PERMISSIONS` array) dan `app/Actions/Teams/CreateTeam.php` (`DEFAULT_ROLES` array).
+1. Ikuti [Panduan Manajemen Permission](#-panduan-manajemen-permission-menambah--synchronize-permission) di atas untuk menambahkan permission baru.
 2. Buat Policy di `app/Policies/`:
 ```bash
 php artisan make:policy ProjectPolicy --model=Project
@@ -215,7 +356,7 @@ public function view(User $user, Project $project): bool
 ---
 
 ### Langkah 5: Form Request & Controller Action
-Buat Form Request untuk validasi input dan Controller untuk mengani HTTP Request:
+Buat Form Request untuk validasi input dan Controller untuk menangani HTTP Request:
 ```bash
 php artisan make:request StoreProjectRequest
 php artisan make:controller ProjectController
@@ -314,7 +455,80 @@ make test
 
 ---
 
-## 🧪 Perintah Testing & Code Quality
+## 📚 Panduan Komponen Arsitektur & Packages
+
+### 1. Service Provider
+- `AppServiceProvider` mendaftarkan konfigurasi default aplikasi, pengaman perintah destruktif di produksi (`DB::prohibitDestructiveCommands()`), serta memastikan bucket storage S3/RustFS lokal siap digunakan.
+- `FortifyServiceProvider` menangani pendaftaran tampilan otentikasi (login, register, 2FA, passkey, reset password).
+
+---
+
+### 2. Routing & Route Model Binding
+- Route aplikasi berada di `routes/web.php` dan `routes/settings.php`.
+- Parametrisasi tim menggunakan `slug` via `getRouteKeyName()` di model `Team`.
+
+---
+
+### 3. Middleware Stack
+- `HandleInertiaRequests`: Membagikan props global (`auth.user`, `currentTeam`, `teams`, flash toast) ke React secara efisien (lazy props).
+- `EnsureTeamMembership`: Memeriksa keanggotaan user pada tim yang diakses dan memasang scope tim untuk Spatie Permission (`setPermissionsTeamId($team->id)`).
+
+---
+
+### 4. Eloquent Model & Events
+- Model menggunakan PHP 8 attributes `#[Fillable(...)]` dan method `casts()`.
+- Menggunakan event static `creating` dan `updating` untuk meng-generate `slug` unik secara otomatis.
+
+---
+
+### 5. Inertia.js + React (SPA tanpa API)
+- Controller mengirim data langsung ke React via `Inertia::render('component/path', $props)`.
+- Menggunakan `useForm()`, `<Link>`, dan `router` dari `@inertiajs/react` untuk navigasi tanpa full-page reload.
+
+---
+
+### 6. Spatie Data (DTO Modern)
+- DTO di `app/Data/` (misal: `TodoData`, `CategoryData`, `TeamPermissions`) digunakan untuk memvalidasi input dan mentransformasi model Eloquent ke format yang type-safe untuk frontend.
+
+---
+
+### 7. Spatie Permission & Dynamic Team RBAC
+- Role dan permission diisolasi per tim (`'teams' => true`).
+- Aksi otorisasi diselaras menggunakan **Dot Notation** (`todos.view`, `todos.create`, `categories.manage`, `teams.update`, dll).
+
+---
+
+### 8. Spatie MediaLibrary (Upload File)
+- Model yang mendukung lampiran file mengimplementasikan `HasMedia` dan menggunakan trait `InteractsWithMedia`.
+- File disimpan dalam koleksi media (`attachments`) dengan konversi otomatis (misal: thumbnail).
+
+---
+
+### 9. Spatie ActivityLog (Audit Trail)
+- Model yang diaudit menggunakan trait `HasActivity` dan mengonfigurasi `getActivitylogOptions()` untuk mencatat perubahan kolom (`logOnlyDirty()`) ke tabel `activity_log`.
+
+---
+
+### 10. Spatie QueryBuilder (Filter & Sort Otomatis)
+- Pencarian, filter persis, dan pengurutan pada tabel data diisolasi menggunakan `QueryBuilder::for(Model::class)->allowedFilters(...)->allowedSorts(...)`.
+
+---
+
+### 11. Wayfinder (Type-safe Routes di Frontend)
+- Meng-generate fungsi helper TypeScript dari rute Laravel di `@/actions` dan `@/routes`.
+- Gunakan `index.url()` atau `dashboard(currentTeam.slug)` alih-alih me-hardcode URL string manual.
+
+---
+
+### 12. Fitur PHP 8.x Modern
+- **Constructor Property Promotion**: `public function __construct(public string $title) {}`
+- **Nullsafe Operator**: `$todo->due_date?->toIso8601String()`
+- **Match Expression**: `match ($this) { self::Owner => 3, self::Admin => 2 }`
+- **Backed Enums**: `enum TeamRole: string` & `enum TeamPermission: string`
+
+---
+
+## 🧪 Perintah Testing, Linting & Debugging
 
 ### Automated Testing (Pest):
 ```bash
@@ -341,11 +555,13 @@ npm run types:check
 vendor/bin/phpstan analyse
 ```
 
-### Build Production Assets:
+### Debugging Tools:
 ```bash
-make build
-# ATAU
-npm run build
+# Real-time Log Tail (Pail)
+php artisan pail
+
+# Interactive REPL (Tinker)
+php artisan tinker
 ```
 
 ---
@@ -371,11 +587,11 @@ todo-craft/
 │   └── seeders/                # Database Seeders
 ├── resources/
 │   └── js/
-│       ├── actions/            # Wayfinder Controller Action Types
+│       ├── actions/            # Wayfinder Controller Action Types (Auto-generated)
 │       ├── components/         # Shared React Components & UI Primitives
 │       ├── layouts/            # App Layouts & Sidebar Templates
 │       ├── pages/              # Inertia React Page Components
-│       ├── routes/             # Wayfinder Route Functions
+│       ├── routes/             # Wayfinder Route Functions (Auto-generated)
 │       └── types/              # TypeScript Interface Definitions
 ├── routes/
 │   ├── console.php             # Scheduled Artisan Commands
