@@ -40,12 +40,12 @@ Dub's visual system is a quiet, almost editorial SaaS aesthetic — a near-white
 - **Letter spacing:** normal
 - **Role:** Display headings — used only at 36–48px for hero and section titles. Weight 500 (medium, not bold) is the signature: headings feel confident and modern but never shout. Satoshi's geometric proportions give the type a slightly editorial, contemporary feel that Inter body text can't replicate.
 
-### Plus Jakarta Sans — Body, UI labels, navigation, subheadings, small headings. Plus Jakarta Sans is the primary workhorse — handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels. The 16px size at lineHeight 1.5 is the canonical body size. · `--font-plus-jakarta-sans`
-- **Substitute:** Plus Jakarta Sans (native)
+### system-ui — Body, UI labels, navigation, subheadings, small headings. system-ui is the primary workhorse — automatically adopting system native fonts (San Francisco on macOS/iOS, Segoe UI on Windows, Roboto on Android) for maximum native feel and performance. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels. · `--font-sans`
+- **Substitute:** Native System UI (San Francisco, Segoe UI, Roboto)
 - **Weights:** 400, 500, 600
 - **Sizes:** 8px, 10px, 11px, 12px, 13px, 14px, 16px, 18px, 20px, 24px, 30px
 - **Line height:** 1.33–1.56
-- **Role:** Primary font — Body, UI labels, navigation, subheadings, small headings. Plus Jakarta Sans handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels.
+- **Role:** Primary font — Body, UI labels, navigation, subheadings, small headings. system-ui handles everything from 11px micro-labels to 30px secondary headlines.
 
 ### Geist Mono — Code snippets, technical metadata, inline monospace tokens. Used at 12–14px in code blocks and 24px for large code display elements. Provides the developer-tool credibility that matches Dub's product positioning. · `--font-geist-mono`
 - **Substitute:** JetBrains Mono or IBM Plex Mono

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PresignedUploadController;
@@ -10,6 +11,11 @@ use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
+
+Route::middleware(['guest'])->group(function () {
+    Route::get('auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+    Route::get('auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+});
 
 Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])

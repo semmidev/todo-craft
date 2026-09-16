@@ -99,7 +99,7 @@ export function AppSidebar() {
 
     const allNavGroups: NavGroupWithPermissions[] = [
         {
-            title: "Platform",
+            title: "",
             items: [
                 {
                     title: "Dashboard",
@@ -137,7 +137,7 @@ export function AppSidebar() {
                     icon: Users,
                     items: [
                         {
-                            title: "Pengaturan Tim",
+                            title: "Pengaturan",
                             href: currentTeamSlug
                                 ? `/settings/teams/${currentTeamSlug}`
                                 : "/settings/teams",
@@ -147,7 +147,7 @@ export function AppSidebar() {
                             ],
                         },
                         {
-                            title: "Peran & Izin Tim",
+                            title: "Peran & Izin",
                             href: currentTeamSlug
                                 ? `/settings/teams/${currentTeamSlug}/roles`
                                 : "/settings/teams",

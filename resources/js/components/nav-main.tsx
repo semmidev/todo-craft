@@ -1,10 +1,10 @@
-import { Link } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
+import { Link } from "@inertiajs/react";
+import { ChevronRight } from "lucide-react";
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+} from "@/components/ui/collapsible";
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -15,18 +15,18 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
     useSidebar,
-} from '@/components/ui/sidebar';
-import { useCurrentUrl } from '@/hooks/use-current-url';
-import { toUrl } from '@/lib/utils';
-import type { NavGroup } from '@/types';
+} from "@/components/ui/sidebar";
+import { useCurrentUrl } from "@/hooks/use-current-url";
+import { toUrl } from "@/lib/utils";
+import type { NavGroup } from "@/types";
 
 function isSubItemActive(
     targetHref: string,
     allHrefs: string[],
-    currentPath: string
+    currentPath: string,
 ): boolean {
     const normalize = (p: string) =>
-        p.endsWith('/') && p.length > 1 ? p.slice(0, -1) : p;
+        p.endsWith("/") && p.length > 1 ? p.slice(0, -1) : p;
     const target = normalize(targetHref);
     const current = normalize(currentPath);
 
@@ -34,13 +34,13 @@ function isSubItemActive(
         return true;
     }
 
-    if (current.startsWith(target + '/')) {
+    if (current.startsWith(target + "/")) {
         const hasLongerMatchingSibling = allHrefs.some((h) => {
             const sibling = normalize(h);
             if (sibling === target || sibling.length <= target.length) {
                 return false;
             }
-            return current === sibling || current.startsWith(sibling + '/');
+            return current === sibling || current.startsWith(sibling + "/");
         });
 
         return !hasLongerMatchingSibling;
@@ -66,26 +66,27 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
 
                 return (
                     <SidebarGroup key={group.title} className="px-2 py-0">
-                        <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                        {group.title && (
+                            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                        )}
                         <SidebarMenu>
                             {group.items.map((item) => {
                                 const hasSubItems = Boolean(
-                                    item.items && item.items.length > 0
+                                    item.items && item.items.length > 0,
                                 );
 
                                 if (hasSubItems) {
                                     const subItemHrefs = (item.items ?? []).map(
-                                        (sub) => toUrl(sub.href)
+                                        (sub) => toUrl(sub.href),
                                     );
 
-                                    const isSubActive = (
-                                        item.items ?? []
-                                    ).some((sub) =>
-                                        isSubItemActive(
-                                            toUrl(sub.href),
-                                            subItemHrefs,
-                                            currentUrl
-                                        )
+                                    const isSubActive = (item.items ?? []).some(
+                                        (sub) =>
+                                            isSubItemActive(
+                                                toUrl(sub.href),
+                                                subItemHrefs,
+                                                currentUrl,
+                                            ),
                                     );
 
                                     return (
@@ -107,7 +108,9 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
                                                         {item.icon && (
                                                             <item.icon />
                                                         )}
-                                                        <span>{item.title}</span>
+                                                        <span>
+                                                            {item.title}
+                                                        </span>
                                                         <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                                     </SidebarMenuButton>
                                                 </CollapsibleTrigger>
@@ -118,10 +121,10 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
                                                                 const active =
                                                                     isSubItemActive(
                                                                         toUrl(
-                                                                            subItem.href
+                                                                            subItem.href,
                                                                         ),
                                                                         subItemHrefs,
-                                                                        currentUrl
+                                                                        currentUrl,
                                                                     );
 
                                                                 return (
@@ -153,7 +156,7 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
                                                                         </SidebarMenuSubButton>
                                                                     </SidebarMenuSubItem>
                                                                 );
-                                                            }
+                                                            },
                                                         )}
                                                     </SidebarMenuSub>
                                                 </CollapsibleContent>
@@ -163,7 +166,7 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
                                 }
 
                                 const isParentActive = isCurrentOrParentUrl(
-                                    item.href
+                                    item.href,
                                 );
 
                                 return (
@@ -191,7 +194,3 @@ export function NavMain({ items = [] }: { items: NavGroup[] }) {
         </>
     );
 }
-
-
-
-
