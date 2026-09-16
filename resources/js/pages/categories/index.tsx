@@ -89,7 +89,6 @@ export default function CategoriesIndex({
                         onClick={() => setIsCreateModalOpen(true)}
                         className="cursor-pointer gap-2 font-medium"
                     >
-                        <Plus className="size-4" />
                         <span>Buat Kategori</span>
                         <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
                             C

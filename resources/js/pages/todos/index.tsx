@@ -431,7 +431,6 @@ export default function TodosIndex({
                         onClick={() => setIsCreateModalOpen(true)}
                         className="cursor-pointer font-medium gap-2"
                     >
-                        <Plus className="h-4 w-4" />
                         <span>Tambah Tugas Baru</span>
                         <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
                             C
