@@ -43,8 +43,18 @@ class PresignedUploadController extends Controller
             $uploadUrl = is_array($presigned) ? ($presigned['url'] ?? $presigned[0] ?? '') : $presigned;
             $presignedHeaders = is_array($presigned) ? ($presigned['headers'] ?? []) : [];
 
+            $fallbackUrl = URL::temporarySignedRoute(
+                'upload.local',
+                now()->addMinutes(15),
+                [
+                    'uuid' => $uuid,
+                    'filename' => $sanitizedFilename,
+                ]
+            );
+
             return response()->json([
                 'upload_url' => $uploadUrl,
+                'fallback_url' => $fallbackUrl,
                 'key' => $key,
                 'disk' => 's3',
                 'headers' => array_merge(

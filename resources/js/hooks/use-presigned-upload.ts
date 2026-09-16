@@ -54,40 +54,54 @@ export function usePresignedUpload() {
             };
 
 
-            // Step 2: Directly upload file binary payload via PUT request to presigned URL
-            await new Promise<void>((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('PUT', upload_url, true);
+            const performUpload = (targetUrl: string, reqHeaders?: Record<string, string>): Promise<void> => {
+                return new Promise<void>((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PUT', targetUrl, true);
 
-                if (headers) {
-                    Object.entries(headers).forEach(([hKey, hVal]) => {
-                        // Skip Host header — browsers disallow setting it
-                        if (hKey.toLowerCase() === 'host') return;
-                        const val = Array.isArray(hVal) ? hVal[0] : hVal;
-                        if (typeof val === 'string') {
-                            xhr.setRequestHeader(hKey, val);
+                    if (reqHeaders) {
+                        Object.entries(reqHeaders).forEach(([hKey, hVal]) => {
+                            // Skip Host header — browsers disallow setting it
+                            if (hKey.toLowerCase() === 'host') return;
+                            const val = Array.isArray(hVal) ? hVal[0] : hVal;
+                            if (typeof val === 'string') {
+                                xhr.setRequestHeader(hKey, val);
+                            }
+                        });
+                    }
+
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const percent = Math.round((event.loaded / event.total) * 100);
+                            setProgress(percent);
                         }
+                    };
+
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve();
+                        } else {
+                            reject(new Error(`Gagal mengunggah berkas (${xhr.status}).`));
+                        }
+                    };
+
+                    xhr.onerror = () => reject(new Error('Terjadi kesalahan jaringan atau CORS saat mengunggah berkas.'));
+                    xhr.send(file);
+                });
+            };
+
+            // Step 2: Try direct upload to presigned URL, fallback to signed local proxy URL on CORS / network failure
+            try {
+                await performUpload(upload_url, headers);
+            } catch (firstErr) {
+                if (data.fallback_url) {
+                    await performUpload(data.fallback_url, {
+                        'Content-Type': file.type || 'application/octet-stream',
                     });
+                } else {
+                    throw firstErr;
                 }
-
-                xhr.upload.onprogress = (event) => {
-                    if (event.lengthComputable) {
-                        const percent = Math.round((event.loaded / event.total) * 100);
-                        setProgress(percent);
-                    }
-                };
-
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        resolve();
-                    } else {
-                        reject(new Error(`Gagal mengunggah berkas (${xhr.status}).`));
-                    }
-                };
-
-                xhr.onerror = () => reject(new Error('Terjadi kesalahan jaringan saat mengunggah berkas.'));
-                xhr.send(file);
-            });
+            }
 
             setIsUploading(false);
             setProgress(100);
