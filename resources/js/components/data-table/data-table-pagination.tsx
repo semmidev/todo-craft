@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 export interface PaginationMeta {
     current_page?: number;
@@ -92,17 +93,16 @@ export function DataTablePagination({
                 {onPerPageChange && (
                     <div className="flex items-center space-x-2">
                         <span className="text-xs font-medium">Baris per halaman:</span>
-                        <select
+                        <SearchableSelect
                             value={perPage}
-                            onChange={(e) => onPerPageChange(Number(e.target.value))}
-                            className="bg-background border-input focus:ring-ring rounded-md border px-2 py-1 text-xs font-medium focus:ring-2 focus:outline-hidden cursor-pointer"
-                        >
-                            {perPageOptions.map((option) => (
-                                <option key={option} value={option}>
-                                    {option}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(val) => onPerPageChange(Number(val))}
+                            options={perPageOptions.map((option) => ({
+                                value: String(option),
+                                label: String(option),
+                            }))}
+                            size="sm"
+                            className="w-20"
+                        />
                     </div>
                 )}
             </div>

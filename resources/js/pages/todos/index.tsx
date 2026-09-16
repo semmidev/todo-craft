@@ -26,6 +26,7 @@ import Modal from '@/components/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import {
@@ -512,70 +513,82 @@ export default function TodosIndex({
                         {/* Filter Select Controls */}
                         <div className="flex flex-wrap items-center gap-2">
                             {/* Status Filter */}
-                            <select
+                            <SearchableSelect
                                 value={statusFilter}
-                                onChange={(e) => {
-                                    setStatusFilter(e.target.value);
-                                    applyFilter('status', e.target.value);
+                                onChange={(val) => {
+                                    setStatusFilter(val);
+                                    applyFilter('status', val);
                                 }}
-                                className="bg-background border-input focus:ring-ring rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-hidden cursor-pointer"
-                            >
-                                <option value="">Semua Status</option>
-                                <option value="pending">Menunggu</option>
-                                <option value="in_progress">Sedang Dikerjakan</option>
-                                <option value="completed">Selesai</option>
-                                <option value="archived">Diarsipkan</option>
-                            </select>
+                                placeholder="Semua Status"
+                                searchPlaceholder="Cari status..."
+                                options={[
+                                    { value: '', label: 'Semua Status' },
+                                    { value: 'pending', label: 'Menunggu' },
+                                    { value: 'in_progress', label: 'Sedang Dikerjakan' },
+                                    { value: 'completed', label: 'Selesai' },
+                                    { value: 'archived', label: 'Diarsipkan' },
+                                ]}
+                                className="w-40"
+                            />
 
                             {/* Priority Filter */}
-                            <select
+                            <SearchableSelect
                                 value={priorityFilter}
-                                onChange={(e) => {
-                                    setPriorityFilter(e.target.value);
-                                    applyFilter('priority', e.target.value);
+                                onChange={(val) => {
+                                    setPriorityFilter(val);
+                                    applyFilter('priority', val);
                                 }}
-                                className="bg-background border-input focus:ring-ring rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-hidden cursor-pointer"
-                            >
-                                <option value="">Semua Prioritas</option>
-                                <option value="urgent">Mendesak</option>
-                                <option value="high">Tinggi</option>
-                                <option value="medium">Sedang</option>
-                                <option value="low">Rendah</option>
-                            </select>
+                                placeholder="Semua Prioritas"
+                                searchPlaceholder="Cari prioritas..."
+                                options={[
+                                    { value: '', label: 'Semua Prioritas' },
+                                    { value: 'urgent', label: 'Mendesak' },
+                                    { value: 'high', label: 'Tinggi' },
+                                    { value: 'medium', label: 'Sedang' },
+                                    { value: 'low', label: 'Rendah' },
+                                ]}
+                                className="w-40"
+                            />
 
                             {/* Category Filter */}
-                            <select
+                            <SearchableSelect
                                 value={categoryFilter}
-                                onChange={(e) => {
-                                    setCategoryFilter(e.target.value);
-                                    applyFilter('category_id', e.target.value);
+                                onChange={(val) => {
+                                    setCategoryFilter(val);
+                                    applyFilter('category_id', val);
                                 }}
-                                className="bg-background border-input focus:ring-ring rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-hidden cursor-pointer"
-                            >
-                                <option value="">Semua Kategori</option>
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="Semua Kategori"
+                                searchPlaceholder="Cari kategori..."
+                                options={[
+                                    { value: '', label: 'Semua Kategori' },
+                                    ...categories.map((cat) => ({
+                                        value: String(cat.id),
+                                        label: cat.name,
+                                        color: cat.color,
+                                    })),
+                                ]}
+                                className="w-44"
+                            />
 
                             {/* Assignee Filter */}
-                            <select
+                            <SearchableSelect
                                 value={assigneeFilter}
-                                onChange={(e) => {
-                                    setAssigneeFilter(e.target.value);
-                                    applyFilter('assigned_to_id', e.target.value);
+                                onChange={(val) => {
+                                    setAssigneeFilter(val);
+                                    applyFilter('assigned_to_id', val);
                                 }}
-                                className="bg-background border-input focus:ring-ring rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-hidden cursor-pointer"
-                            >
-                                <option value="">Semua Penanggung Jawab</option>
-                                {teamMembers.map((member) => (
-                                    <option key={member.id} value={member.id}>
-                                        {member.name}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="Semua Penanggung Jawab"
+                                searchPlaceholder="Cari nama..."
+                                options={[
+                                    { value: '', label: 'Semua Penanggung Jawab' },
+                                    ...teamMembers.map((member) => ({
+                                        value: String(member.id),
+                                        label: member.name,
+                                        description: member.email,
+                                    })),
+                                ]}
+                                className="w-48"
+                            />
 
                             {/* Reset Filters Button */}
                             {hasActiveFilters && (
@@ -880,7 +893,7 @@ export default function TodosIndex({
                                 createForm.setData('title', e.target.value)
                             }
                             placeholder="Masukkan judul tugas..."
-                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                         />
                         {createForm.errors.title && (
                             <p className="text-destructive mt-1 text-xs">
@@ -900,7 +913,7 @@ export default function TodosIndex({
                                 createForm.setData('description', e.target.value)
                             }
                             placeholder="Deskripsi detail atau langkah-langkah..."
-                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                         />
                     </div>
 
@@ -909,41 +922,41 @@ export default function TodosIndex({
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Prioritas
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={createForm.data.priority}
-                                onChange={(e: any) =>
-                                    createForm.setData('priority', e.target.value)
+                                onChange={(val) =>
+                                    createForm.setData('priority', val as any)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="low">Rendah</option>
-                                <option value="medium">Sedang</option>
-                                <option value="high">Tinggi</option>
-                                <option value="urgent">Mendesak</option>
-                            </select>
+                                options={[
+                                    { value: 'low', label: 'Rendah' },
+                                    { value: 'medium', label: 'Sedang' },
+                                    { value: 'high', label: 'Tinggi' },
+                                    { value: 'urgent', label: 'Mendesak' },
+                                ]}
+                                placeholder="Pilih prioritas"
+                            />
                         </div>
 
                         <div>
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Kategori
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={createForm.data.category_id}
-                                onChange={(e) =>
-                                    createForm.setData(
-                                        'category_id',
-                                        e.target.value,
-                                    )
+                                onChange={(val) =>
+                                    createForm.setData('category_id', val)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="">Tanpa Kategori</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { value: '', label: 'Tanpa Kategori' },
+                                    ...categories.map((c) => ({
+                                        value: String(c.id),
+                                        label: c.name,
+                                        color: c.color,
+                                    })),
+                                ]}
+                                placeholder="Pilih Kategori"
+                                searchPlaceholder="Cari kategori..."
+                            />
                         </div>
                     </div>
 
@@ -952,25 +965,21 @@ export default function TodosIndex({
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Penanggung Jawab
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={createForm.data.assigned_to_id}
-                                onChange={(e) =>
-                                    createForm.setData(
-                                        'assigned_to_id',
-                                        e.target.value,
-                                    )
+                                onChange={(val) =>
+                                    createForm.setData('assigned_to_id', val)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="">
-                                    Pilih Penanggung Jawab
-                                </option>
-                                {teamMembers.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                        {m.name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { value: '', label: 'Pilih Penanggung Jawab' },
+                                    ...teamMembers.map((m) => ({
+                                        value: String(m.id),
+                                        label: m.name,
+                                    })),
+                                ]}
+                                placeholder="Pilih Penanggung Jawab"
+                                searchPlaceholder="Cari anggota..."
+                            />
                         </div>
 
                         <div>
@@ -983,7 +992,7 @@ export default function TodosIndex({
                                 onChange={(e) =>
                                     createForm.setData('due_date', e.target.value)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                                className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                             />
                         </div>
                     </div>
@@ -1076,7 +1085,7 @@ export default function TodosIndex({
                                 editForm.setData('title', e.target.value)
                             }
                             placeholder="Masukkan judul tugas..."
-                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                         />
                         {editForm.errors.title && (
                             <p className="text-destructive mt-1 text-xs">
@@ -1096,7 +1105,7 @@ export default function TodosIndex({
                                 editForm.setData('description', e.target.value)
                             }
                             placeholder="Deskripsi detail atau langkah-langkah..."
-                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                         />
                     </div>
 
@@ -1105,36 +1114,38 @@ export default function TodosIndex({
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Status
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={editForm.data.status}
-                                onChange={(e: any) =>
-                                    editForm.setData('status', e.target.value)
+                                onChange={(val) =>
+                                    editForm.setData('status', val as any)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="pending">Menunggu</option>
-                                <option value="in_progress">Sedang Dikerjakan</option>
-                                <option value="completed">Selesai</option>
-                                <option value="archived">Diarsipkan</option>
-                            </select>
+                                options={[
+                                    { value: 'pending', label: 'Menunggu' },
+                                    { value: 'in_progress', label: 'Sedang Dikerjakan' },
+                                    { value: 'completed', label: 'Selesai' },
+                                    { value: 'archived', label: 'Diarsipkan' },
+                                ]}
+                                placeholder="Pilih status"
+                            />
                         </div>
 
                         <div>
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Prioritas
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={editForm.data.priority}
-                                onChange={(e: any) =>
-                                    editForm.setData('priority', e.target.value)
+                                onChange={(val) =>
+                                    editForm.setData('priority', val as any)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="low">Rendah</option>
-                                <option value="medium">Sedang</option>
-                                <option value="high">Tinggi</option>
-                                <option value="urgent">Mendesak</option>
-                            </select>
+                                options={[
+                                    { value: 'low', label: 'Rendah' },
+                                    { value: 'medium', label: 'Sedang' },
+                                    { value: 'high', label: 'Tinggi' },
+                                    { value: 'urgent', label: 'Mendesak' },
+                                ]}
+                                placeholder="Pilih prioritas"
+                            />
                         </div>
                     </div>
 
@@ -1143,48 +1154,43 @@ export default function TodosIndex({
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Kategori
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={editForm.data.category_id}
-                                onChange={(e) =>
-                                    editForm.setData(
-                                        'category_id',
-                                        e.target.value,
-                                    )
+                                onChange={(val) =>
+                                    editForm.setData('category_id', val)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="">Tanpa Kategori</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { value: '', label: 'Tanpa Kategori' },
+                                    ...categories.map((c) => ({
+                                        value: String(c.id),
+                                        label: c.name,
+                                        color: c.color,
+                                    })),
+                                ]}
+                                placeholder="Pilih Kategori"
+                                searchPlaceholder="Cari kategori..."
+                            />
                         </div>
 
                         <div>
                             <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
                                 Penanggung Jawab
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={editForm.data.assigned_to_id}
-                                onChange={(e) =>
-                                    editForm.setData(
-                                        'assigned_to_id',
-                                        e.target.value,
-                                    )
+                                onChange={(val) =>
+                                    editForm.setData('assigned_to_id', val)
                                 }
-                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                            >
-                                <option value="">
-                                    Pilih Penanggung Jawab
-                                </option>
-                                {teamMembers.map((m) => (
-                                    <option key={m.id} value={m.id}>
-                                        {m.name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { value: '', label: 'Pilih Penanggung Jawab' },
+                                    ...teamMembers.map((m) => ({
+                                        value: String(m.id),
+                                        label: m.name,
+                                    })),
+                                ]}
+                                placeholder="Pilih Penanggung Jawab"
+                                searchPlaceholder="Cari anggota..."
+                            />
                         </div>
                     </div>
 
@@ -1198,7 +1204,7 @@ export default function TodosIndex({
                             onChange={(e) =>
                                 editForm.setData('due_date', e.target.value)
                             }
-                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                         />
                     </div>
 

@@ -113,7 +113,7 @@ export default function Modal({
                             </div>
                         )}
 
-                        <div className="overflow-y-auto flex-1 pr-1">
+                        <div className="overflow-y-auto flex-1 p-1">
                             {children}
                         </div>
                     </motion.div>

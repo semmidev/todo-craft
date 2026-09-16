@@ -38,51 +38,83 @@ class GoogleController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (Throwable $e) {
-            return redirect()->route('login')->withErrors([
+            $target = Auth::check() ? route('password.confirm') : route('login');
+
+            return redirect()->to($target)->withErrors([
                 'email' => 'Gagal melakukan otentikasi dengan Google. Silakan coba lagi.',
             ]);
         }
 
-        $user = User::where('google_id', $googleUser->getId())
-            ->orWhere('email', $googleUser->getEmail())
-            ->first();
+        // Always mark password confirmed in session when Google authentication succeeds
+        session(['auth.password_confirmed_at' => time()]);
 
-        $googleAvatarUrl = $googleUser->getAvatar();
+        if (Auth::check()) {
+            $currentUser = Auth::user();
 
-        if ($user) {
-            $updates = [];
-            if (! $user->google_id) {
-                $updates['google_id'] = $googleUser->getId();
-            }
+            if ($currentUser->google_id === $googleUser->getId() || strtolower($currentUser->email) === strtolower($googleUser->getEmail())) {
+                $user = $currentUser;
 
-            if (! $user->avatar && $googleAvatarUrl) {
-                $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
-                $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
-            }
+                $updates = [];
+                if (! $user->google_id) {
+                    $updates['google_id'] = $googleUser->getId();
+                }
 
-            if (! empty($updates)) {
-                $user->update($updates);
+                $googleAvatarUrl = $googleUser->getAvatar();
+                if (! $user->avatar && $googleAvatarUrl) {
+                    $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
+                    $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
+                }
+
+                if (! empty($updates)) {
+                    $user->update($updates);
+                }
+            } else {
+                return redirect()->route('password.confirm')->withErrors([
+                    'password' => 'Akun Google ('.$googleUser->getEmail().') tidak cocok dengan akun Anda saat ini.',
+                ]);
             }
         } else {
-            $user = DB::transaction(function () use ($googleUser, $googleAvatarUrl) {
-                $storedAvatar = $googleAvatarUrl ? $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl) : null;
+            $user = User::where('google_id', $googleUser->getId())
+                ->orWhere('email', $googleUser->getEmail())
+                ->first();
 
-                $newUser = User::create([
-                    'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Pengguna Google',
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $storedAvatar ?? $googleAvatarUrl,
-                    'email_verified_at' => now(),
-                    'password' => Hash::make(Str::random(32)),
-                ]);
+            $googleAvatarUrl = $googleUser->getAvatar();
 
-                $this->createTeam->handle($newUser, $newUser->name."'s Team", isPersonal: true);
+            if ($user) {
+                $updates = [];
+                if (! $user->google_id) {
+                    $updates['google_id'] = $googleUser->getId();
+                }
 
-                return $newUser;
-            });
+                if (! $user->avatar && $googleAvatarUrl) {
+                    $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
+                    $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
+                }
+
+                if (! empty($updates)) {
+                    $user->update($updates);
+                }
+            } else {
+                $user = DB::transaction(function () use ($googleUser, $googleAvatarUrl) {
+                    $storedAvatar = $googleAvatarUrl ? $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl) : null;
+
+                    $newUser = User::create([
+                        'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Pengguna Google',
+                        'email' => $googleUser->getEmail(),
+                        'google_id' => $googleUser->getId(),
+                        'avatar' => $storedAvatar ?? $googleAvatarUrl,
+                        'email_verified_at' => now(),
+                        'password' => Hash::make(Str::random(32)),
+                    ]);
+
+                    $this->createTeam->handle($newUser, $newUser->name."'s Team", isPersonal: true);
+
+                    return $newUser;
+                });
+            }
+
+            Auth::login($user, remember: true);
         }
-
-        Auth::login($user, remember: true);
 
         $team = $user->currentTeam ?? $user->personalTeam() ?? $user->teams()->first();
 
@@ -96,6 +128,6 @@ class GoogleController extends Controller
             return redirect()->intended(route('dashboard', ['current_team' => $team->slug]));
         }
 
-        return redirect()->route('home');
+        return redirect()->intended(route('home'));
     }
 }

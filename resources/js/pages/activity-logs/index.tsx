@@ -15,6 +15,7 @@ import { DataTablePagination } from '@/components/data-table/data-table-paginati
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -214,21 +215,23 @@ export default function ActivityLogsIndex({
                         {/* Filter Select Controls */}
                         <div className="flex flex-wrap items-center gap-2">
                             {/* Log Name Filter */}
-                            <select
+                            <SearchableSelect
                                 value={logNameFilter}
-                                onChange={(e) => {
-                                    setLogNameFilter(e.target.value);
-                                    applyFilter('log_name', e.target.value);
+                                onChange={(val) => {
+                                    setLogNameFilter(val);
+                                    applyFilter('log_name', val);
                                 }}
-                                className="bg-background border-input focus:ring-ring rounded-lg border px-3 py-2 text-sm focus:ring-2 focus:outline-hidden cursor-pointer"
-                            >
-                                <option value="">Semua Saluran</option>
-                                {logNames.map((name) => (
-                                    <option key={name} value={name}>
-                                        {name}
-                                    </option>
-                                ))}
-                            </select>
+                                options={[
+                                    { value: '', label: 'Semua Saluran' },
+                                    ...logNames.map((name) => ({
+                                        value: name,
+                                        label: name,
+                                    })),
+                                ]}
+                                placeholder="Semua Saluran"
+                                searchPlaceholder="Cari saluran..."
+                                className="w-48"
+                            />
 
                             {/* Reset Filters Button */}
                             {hasActiveFilters && (

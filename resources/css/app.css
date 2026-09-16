@@ -107,7 +107,7 @@ html {
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
     --border: #e5e5e5;
-    --input: #0a0a0a;
+    --input: #e5e5e5;
     --ring: #2563eb;
     --radius: 0.5rem;
     --sidebar: #ffffff;
@@ -138,7 +138,7 @@ html {
     --destructive: #ef4444;
     --destructive-foreground: #ffffff;
     --border: #262626;
-    --input: #e5e5e5;
+    --input: #262626;
     --ring: #2563eb;
     --sidebar: #0a0a0a;
     --sidebar-foreground: #f5f5f5;
