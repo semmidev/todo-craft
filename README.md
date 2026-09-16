@@ -1,47 +1,58 @@
-# Technical Documentation & Developer Guide — TodoCraft
-
-Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur aplikasi, panduan pengembangan fitur baru, serta manajemen permission untuk aplikasi **TodoCraft**.
-
----
+# Technical Documentation
 
 ## Daftar Isi
 
-- [Tech Stack & Dependencies](#tech-stack--dependencies)
-- [Prasyarat Sistem](#prasyarat-sistem)
-- [Docker & Makefile Workflows](#docker--makefile-workflows)
-- [Setup Environment & Pengoperasian Lokal](#setup-environment--pengoperasian-lokal)
-- [Background Scheduler & Task Runner](#background-scheduler--task-runner)
-- [Urutan Eksekusi Request (Request Lifecycle)](#urutan-eksekusi-request-request-lifecycle)
-- [Panduan Manajemen Permission (Menambah & Synchronize Permission)](#panduan-manajemen-permission-menambah--synchronize-permission)
-  - [1. Tempat Mendefinisikan Permission Baru](#1-tempat-mendefinisikan-permission-baru)
-  - [2. Sinkronisasi Permission ke Database Tanpa Menghapus Data Lama](#2-sinkronisasi-permission-ke-database-tanpa-menghapus-data-lama)
-  - [3. Penambahan Permission ke Tim yang Sudah Ada (Existing Teams)](#3-penambahan-permission-ke-tim-yang-sudah-ada-existing-teams)
-- [Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)](#panduan-pengembangan-fitur-baru-step-by-step-developer-guide)
-  - [Langkah 1: Database Migration](#langkah-1-database-migration)
-  - [Langkah 2: Model Eloquent, Enum, Casts & Relasi](#langkah-2-model-eloquent-enum-casts--relasi)
-  - [Langkah 3: Factory & Database Seeder](#langkah-3-factory--database-seeder)
-  - [Langkah 4: Permission & Authorization Policy](#langkah-4-permission--authorization-policy)
-  - [Langkah 5: Form Request & Controller Action](#langkah-5-form-request--controller-action)
-  - [Langkah 6: Notifikasi & Queue (Email / Database)](#langkah-6-notifikasi--queue-email--database)
-  - [Langkah 7: Routing & Wayfinder TypeScript Generation](#langkah-7-routing--wayfinder-typescript-generation)
-  - [Langkah 8: Tipe TypeScript, Halaman React & Komponen UI](#langkah-8-tipe-typescript-halaman-react--komponen-ui)
-  - [Langkah 9: Automated Testing dengan Pest PHP](#langkah-9-automated-testing-dengan-pest-php)
-  - [Langkah 10: Formatting & Verifikasi Akhir](#langkah-10-formatting--verifikasi-akhir)
-- [Panduan Komponen Arsitektur & Packages](#panduan-komponen-arsitektur--packages)
-  - [1. Service Provider](#1-service-provider)
-  - [2. Routing & Route Model Binding](#2-routing--route-model-binding)
-  - [3. Middleware Stack](#3-middleware-stack)
-  - [4. Eloquent Model & Events](#4-eloquent-model--events)
-  - [5. Inertia.js + React (SPA tanpa API)](#5-inertiajs--react-spa-tanpa-api)
-  - [6. Spatie Data (DTO Modern)](#6-spatie-data-dto-modern)
-  - [7. Spatie Permission & Dynamic Team RBAC](#7-spatie-permission--dynamic-team-rbac)
-  - [8. Spatie MediaLibrary (Upload File)](#8-spatie-medialibrary-upload-file)
-  - [9. Spatie ActivityLog (Audit Trail)](#9-spatie-activitylog-audit-trail)
-  - [10. Spatie QueryBuilder (Filter & Sort Otomatis)](#10-spatie-querybuilder-filter--sort-otomatis)
-  - [11. Wayfinder (Type-safe Routes di Frontend)](#11-wayfinder-type-safe-routes-di-frontend)
-  - [12. Fitur PHP 8.x Modern](#12-fitur-php-8x-modern)
-- [Perintah Testing, Linting & Debugging](#perintah-testing-linting--debugging)
-- [Struktur Arsitektur Project](#struktur-arsitektur-project)
+- [Technical Documentation](#technical-documentation)
+  - [Daftar Isi](#daftar-isi)
+  - [Tech Stack \& Dependencies](#tech-stack--dependencies)
+  - [Prasyarat Sistem](#prasyarat-sistem)
+  - [Docker \& Makefile Workflows](#docker--makefile-workflows)
+    - [1. Jalankan Container Infrastructure Development:](#1-jalankan-container-infrastructure-development)
+    - [2. Hentikan Container:](#2-hentikan-container)
+    - [3. Perintah Utama Makefile:](#3-perintah-utama-makefile)
+  - [Setup Environment \& Pengoperasian Lokal](#setup-environment--pengoperasian-lokal)
+    - [1. Instalasi Dependensi](#1-instalasi-dependensi)
+    - [2. Konfigurasi File `.env` \& Application Key](#2-konfigurasi-file-env--application-key)
+    - [3. Konfigurasi Database \& Migrasi](#3-konfigurasi-database--migrasi)
+    - [4. Menjalankan Development Server \& Background Scheduler](#4-menjalankan-development-server--background-scheduler)
+  - [Background Scheduler \& Task Runner](#background-scheduler--task-runner)
+    - [Command Pengingat Todo Manual:](#command-pengingat-todo-manual)
+    - [Menjalankan Scheduler Secara Terpisah:](#menjalankan-scheduler-secara-terpisah)
+  - [Urutan Eksekusi Request (Request Lifecycle)](#urutan-eksekusi-request-request-lifecycle)
+  - [Panduan Manajemen Permission (Menambah \& Synchronize Permission)](#panduan-manajemen-permission-menambah--synchronize-permission)
+    - [1. Tempat Mendefinisikan Permission Baru](#1-tempat-mendefinisikan-permission-baru)
+    - [2. Sinkronisasi Permission ke Database Tanpa Menghapus Data Lama](#2-sinkronisasi-permission-ke-database-tanpa-menghapus-data-lama)
+    - [3. Penambahan Permission ke Tim yang Sudah Ada (Existing Teams)](#3-penambahan-permission-ke-tim-yang-sudah-ada-existing-teams)
+  - [Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)](#panduan-pengembangan-fitur-baru-step-by-step-developer-guide)
+    - [Langkah 1: Database Migration](#langkah-1-database-migration)
+    - [Langkah 2: Model Eloquent, Enum, Casts \& Relasi](#langkah-2-model-eloquent-enum-casts--relasi)
+    - [Langkah 3: Factory \& Database Seeder](#langkah-3-factory--database-seeder)
+    - [Langkah 4: Permission \& Authorization Policy](#langkah-4-permission--authorization-policy)
+    - [Langkah 5: Form Request \& Controller Action](#langkah-5-form-request--controller-action)
+    - [Langkah 6: Notifikasi \& Queue (Email / Database)](#langkah-6-notifikasi--queue-email--database)
+    - [Langkah 7: Routing \& Wayfinder TypeScript Generation](#langkah-7-routing--wayfinder-typescript-generation)
+    - [Langkah 8: Tipe TypeScript, Halaman React \& Komponen UI](#langkah-8-tipe-typescript-halaman-react--komponen-ui)
+    - [Langkah 9: Automated Testing dengan Pest PHP](#langkah-9-automated-testing-dengan-pest-php)
+    - [Langkah 10: Formatting \& Verifikasi Akhir](#langkah-10-formatting--verifikasi-akhir)
+  - [Panduan Komponen Arsitektur \& Packages](#panduan-komponen-arsitektur--packages)
+    - [1. Service Provider](#1-service-provider)
+    - [2. Routing \& Route Model Binding](#2-routing--route-model-binding)
+    - [3. Middleware Stack](#3-middleware-stack)
+    - [4. Eloquent Model \& Events](#4-eloquent-model--events)
+    - [5. Inertia.js + React (SPA tanpa API)](#5-inertiajs--react-spa-tanpa-api)
+    - [6. Spatie Data (DTO Modern)](#6-spatie-data-dto-modern)
+    - [7. Spatie Permission \& Dynamic Team RBAC](#7-spatie-permission--dynamic-team-rbac)
+    - [8. Spatie MediaLibrary (Upload File)](#8-spatie-medialibrary-upload-file)
+    - [9. Spatie ActivityLog (Audit Trail)](#9-spatie-activitylog-audit-trail)
+    - [10. Spatie QueryBuilder (Filter \& Sort Otomatis)](#10-spatie-querybuilder-filter--sort-otomatis)
+    - [11. Wayfinder (Type-safe Routes di Frontend)](#11-wayfinder-type-safe-routes-di-frontend)
+    - [12. Fitur PHP 8.x Modern](#12-fitur-php-8x-modern)
+  - [Perintah Testing, Linting \& Debugging](#perintah-testing-linting--debugging)
+    - [Automated Testing (Pest):](#automated-testing-pest)
+    - [Code Formatting (Laravel Pint):](#code-formatting-laravel-pint)
+    - [Static Analysis \& Type Checking:](#static-analysis--type-checking)
+    - [Debugging Tools:](#debugging-tools)
+  - [Struktur Arsitektur Project](#struktur-arsitektur-project)
 
 ---
 
@@ -276,7 +287,7 @@ app()[PermissionRegistrar::class]->forgetCachedPermissions();
 // Berikan permission baru ke role Admin di seluruh tim yang sudah ada
 Team::all()->each(function (Team $team) {
     setPermissionsTeamId($team->id);
-    
+
     $adminRole = Role::where('name', 'admin')->where('team_id', $team->id)->first();
     if ($adminRole) {
         $adminRole->givePermissionTo('reports.view');
@@ -348,7 +359,7 @@ php artisan make:policy ProjectPolicy --model=Project
 ```php
 public function view(User $user, Project $project): bool
 {
-    return $user->belongsToTeam($project->team) 
+    return $user->belongsToTeam($project->team)
         && ($user->ownsTeam($project->team) || $user->hasTeamPermission($project->team, 'projects.view'));
 }
 ```
