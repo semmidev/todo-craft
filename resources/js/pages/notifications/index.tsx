@@ -12,7 +12,6 @@ import {
 import { useState } from 'react';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import Heading from '@/components/heading';
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -79,12 +78,7 @@ export default function NotificationsIndex({
     };
 
     return (
-        <AppLayout
-            breadcrumbs={[
-                { title: 'Dashboard', href: '/dashboard' },
-                { title: 'Notifikasi', href: '/notifications' },
-            ]}
-        >
+        <>
             <Head title="Notifikasi - Pusat Pemberitahuan" />
 
             <div className="space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -238,6 +232,14 @@ export default function NotificationsIndex({
                     )}
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+NotificationsIndex.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Notifikasi', href: '/notifications' },
+    ],
+};
+
