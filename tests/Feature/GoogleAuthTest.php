@@ -25,12 +25,12 @@ test('can authenticate user with google and create team if new', function () {
 
     $response = $this->get(route('auth.google.callback'));
 
-    $response->assertRedirect('/dashboard');
-
     $this->assertAuthenticated();
 
     $user = User::where('email', 'user@google.com')->first();
     expect($user)->not->toBeNull();
     expect($user->google_id)->toBe('google-id-12345');
     expect($user->currentTeam)->not->toBeNull();
+
+    $response->assertRedirect(route('dashboard', ['current_team' => $user->currentTeam->slug]));
 });

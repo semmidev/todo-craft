@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
@@ -68,6 +69,18 @@ class GoogleController extends Controller
 
         Auth::login($user, remember: true);
 
-        return redirect()->intended('/dashboard');
+        $team = $user->currentTeam ?? $user->personalTeam() ?? $user->teams()->first();
+
+        if ($team) {
+            if (! $user->current_team_id) {
+                $user->update(['current_team_id' => $team->id]);
+            }
+
+            URL::defaults(['current_team' => $team->slug]);
+
+            return redirect()->intended(route('dashboard', ['current_team' => $team->slug]));
+        }
+
+        return redirect()->route('home');
     }
 }
