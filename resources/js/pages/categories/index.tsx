@@ -4,6 +4,8 @@ import { FormEvent, useState } from 'react';
 import ConfirmDialog from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
+import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
 
 interface Category {
     id: number;
@@ -35,6 +37,10 @@ export default function CategoriesIndex({
         name: '',
         color: '#3b82f6',
         icon: 'tag',
+    });
+
+    useKeyboardShortcut('c', () => {
+        setIsCreateModalOpen(true);
     });
 
     const handleCreateSubmit = (e: FormEvent) => {
@@ -81,10 +87,13 @@ export default function CategoriesIndex({
                 >
                     <Button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="cursor-pointer"
+                        className="cursor-pointer gap-2 font-medium"
                     >
                         <Plus className="size-4" />
-                        Buat Kategori
+                        <span>Buat Kategori</span>
+                        <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
+                            C
+                        </Kbd>
                     </Button>
                 </Heading>
 

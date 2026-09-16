@@ -24,6 +24,8 @@ import { DataTablePagination } from '@/components/data-table/data-table-paginati
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
+import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import {
     DropdownMenu,
@@ -161,6 +163,10 @@ export default function TodosIndex({
     const { uploadMultiple, isUploading: isPresignedUploading, progress } = usePresignedUpload();
     const [createFiles, setCreateFiles] = useState<File[]>([]);
     const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+
+    useKeyboardShortcut('c', () => {
+        setIsCreateModalOpen(true);
+    });
 
     // Debounced search effect
     useEffect(() => {
@@ -423,10 +429,13 @@ export default function TodosIndex({
                 >
                     <Button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="cursor-pointer font-medium"
+                        className="cursor-pointer font-medium gap-2"
                     >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Tugas Baru
+                        <Plus className="h-4 w-4" />
+                        <span>Tambah Tugas Baru</span>
+                        <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
+                            C
+                        </Kbd>
                     </Button>
                 </Heading>
 
