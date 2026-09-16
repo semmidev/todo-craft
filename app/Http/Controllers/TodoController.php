@@ -8,6 +8,8 @@ use App\Models\Category;
 use App\Models\Team;
 use App\Models\Todo;
 use App\Models\TodoItem;
+use App\Models\User;
+use App\Notifications\TodoAssignedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -92,6 +94,10 @@ class TodoController extends Controller
             ? Carbon::parse($data['due_date'])->setTimezone('UTC')
             : null;
 
+        $reminderOffset = isset($data['reminder_offset']) && $data['reminder_offset'] !== ''
+            ? (int) $data['reminder_offset']
+            : null;
+
         $todo = Todo::create([
             'team_id' => $currentTeam->id,
             'user_id' => $request->user()->id,
@@ -102,9 +108,17 @@ class TodoController extends Controller
             'status' => $data['status'] ?? 'pending',
             'priority' => $data['priority'] ?? 'medium',
             'due_date' => $dueDate,
+            'reminder_offset' => $reminderOffset,
         ]);
 
         $this->attachUploadedFiles($todo, $request);
+
+        if ($todo->assigned_to_id && $todo->assigned_to_id !== $request->user()->id) {
+            $assigneeUser = User::find($todo->assigned_to_id);
+            if ($assigneeUser) {
+                $assigneeUser->notify(new TodoAssignedNotification($todo, $request->user()));
+            }
+        }
 
         if ($request->filled('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $index => $itemData) {
@@ -150,9 +164,15 @@ class TodoController extends Controller
             ? Carbon::parse($data['due_date'])->setTimezone('UTC')
             : null;
 
+        $reminderOffset = isset($data['reminder_offset']) && $data['reminder_offset'] !== ''
+            ? (int) $data['reminder_offset']
+            : null;
+
         $completedAt = $data['status'] === 'completed' && ! $todo->completed_at
             ? Carbon::now()->setTimezone('UTC')
             : ($data['status'] !== 'completed' ? null : $todo->completed_at);
+
+        $oldAssignedToId = $todo->assigned_to_id;
 
         $todo->update([
             'title' => $data['title'],
@@ -162,8 +182,16 @@ class TodoController extends Controller
             'category_id' => $data['category_id'] ?? null,
             'assigned_to_id' => $data['assigned_to_id'] ?? null,
             'due_date' => $dueDate,
+            'reminder_offset' => $reminderOffset,
             'completed_at' => $completedAt,
         ]);
+
+        if ($todo->assigned_to_id && $todo->assigned_to_id !== $oldAssignedToId && $todo->assigned_to_id !== $request->user()->id) {
+            $assigneeUser = User::find($todo->assigned_to_id);
+            if ($assigneeUser) {
+                $assigneeUser->notify(new TodoAssignedNotification($todo, $request->user()));
+            }
+        }
 
         $this->attachUploadedFiles($todo, $request);
 

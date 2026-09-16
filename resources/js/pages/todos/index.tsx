@@ -181,6 +181,17 @@ export default function TodosIndex({
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+const REMINDER_OPTIONS = [
+    { value: '', label: 'Tidak ada pengingat' },
+    { value: '0', label: 'Pada waktu tenggat' },
+    { value: '15', label: '15 menit sebelum' },
+    { value: '30', label: '30 menit sebelum' },
+    { value: '60', label: '1 jam sebelum' },
+    { value: '1440', label: '1 hari sebelum' },
+    { value: '2880', label: '2 hari sebelum' },
+    { value: '10080', label: '1 minggu sebelum' },
+];
+
     // Form for creating Todo
     const createForm = useForm<{
         title: string;
@@ -190,6 +201,7 @@ export default function TodosIndex({
         category_id: string;
         assigned_to_id: string;
         due_date: string;
+        reminder_offset: string;
         attachments: File[];
         items: { title: string; is_completed: boolean }[];
     }>({
@@ -200,6 +212,7 @@ export default function TodosIndex({
         category_id: '',
         assigned_to_id: '',
         due_date: '',
+        reminder_offset: '',
         attachments: [],
         items: [{ title: '', is_completed: false }],
     });
@@ -213,6 +226,7 @@ export default function TodosIndex({
         category_id: string;
         assigned_to_id: string;
         due_date: string;
+        reminder_offset: string;
     }>({
         title: '',
         description: '',
@@ -221,6 +235,7 @@ export default function TodosIndex({
         category_id: '',
         assigned_to_id: '',
         due_date: '',
+        reminder_offset: '',
     });
 
     const applyFilter = (key: string, value: string) => {
@@ -356,6 +371,7 @@ export default function TodosIndex({
             category_id: todo.category?.id ? String(todo.category.id) : '',
             assigned_to_id: todo.assignee?.id ? String(todo.assignee.id) : '',
             due_date: formatToDatetimeLocalInput(todo.due_date),
+            reminder_offset: (todo as any).reminder_offset !== null && (todo as any).reminder_offset !== undefined ? String((todo as any).reminder_offset) : '',
         });
     };
 
@@ -995,6 +1011,21 @@ export default function TodosIndex({
                                 className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
                             />
                         </div>
+
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Pengingat Notifikasi
+                            </label>
+                            <SearchableSelect
+                                value={createForm.data.reminder_offset}
+                                onChange={(val) =>
+                                    createForm.setData('reminder_offset', val)
+                                }
+                                options={REMINDER_OPTIONS}
+                                placeholder="Pilih pengingat"
+                                searchPlaceholder="Cari pengingat..."
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -1194,18 +1225,35 @@ export default function TodosIndex({
                         </div>
                     </div>
 
-                    <div>
-                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                            Tenggat Waktu (Waktu Lokal Anda)
-                        </label>
-                        <input
-                            type="datetime-local"
-                            value={editForm.data.due_date}
-                            onChange={(e) =>
-                                editForm.setData('due_date', e.target.value)
-                            }
-                            className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Tenggat Waktu (Waktu Lokal Anda)
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={editForm.data.due_date}
+                                onChange={(e) =>
+                                    editForm.setData('due_date', e.target.value)
+                                }
+                                className="bg-background border-input focus:border-primary focus:ring-2 focus:ring-primary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-colors"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Pengingat Notifikasi
+                            </label>
+                            <SearchableSelect
+                                value={editForm.data.reminder_offset}
+                                onChange={(val) =>
+                                    editForm.setData('reminder_offset', val)
+                                }
+                                options={REMINDER_OPTIONS}
+                                placeholder="Pilih pengingat"
+                                searchPlaceholder="Cari pengingat..."
+                            />
+                        </div>
                     </div>
 
                     <div className="border-border flex justify-end gap-2 border-t pt-4">

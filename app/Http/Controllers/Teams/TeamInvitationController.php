@@ -7,11 +7,11 @@ use App\Http\Requests\Teams\CreateTeamInvitationRequest;
 use App\Http\Requests\Teams\RespondToTeamInvitationRequest;
 use App\Models\Team;
 use App\Models\TeamInvitation;
+use App\Models\User;
 use App\Notifications\Teams\TeamInvitation as TeamInvitationNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -31,8 +31,10 @@ class TeamInvitationController extends Controller
             'expires_at' => now()->addDays(3),
         ]);
 
-        Notification::route('mail', $invitation->email)
-            ->notify(new TeamInvitationNotification($invitation));
+        $recipientUser = User::where('email', $invitation->email)->first();
+        if ($recipientUser) {
+            $recipientUser->notify(new TeamInvitationNotification($invitation));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation sent.')]);
 

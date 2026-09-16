@@ -27,13 +27,37 @@ class Todo extends Model implements HasMedia
         'status',
         'priority',
         'due_date',
+        'reminder_offset',
+        'reminder_at',
+        'reminder_sent',
         'completed_at',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Todo $todo) {
+            if ($todo->due_date && $todo->reminder_offset !== null && $todo->reminder_offset !== '') {
+                $newReminderAt = $todo->due_date->copy()->subMinutes((int) $todo->reminder_offset);
+                if ($todo->isDirty('due_date') || $todo->isDirty('reminder_offset')) {
+                    $todo->reminder_at = $newReminderAt;
+                    $todo->reminder_sent = false;
+                }
+            } else {
+                $todo->reminder_at = null;
+                $todo->reminder_sent = false;
+            }
+        });
+    }
 
     protected function casts(): array
     {
         return [
             'due_date' => 'datetime',
+            'reminder_at' => 'datetime',
+            'reminder_sent' => 'boolean',
+            'reminder_offset' => 'integer',
             'completed_at' => 'datetime',
         ];
     }

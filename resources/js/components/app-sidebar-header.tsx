@@ -1,5 +1,6 @@
-import { Bell, Check, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import NotificationDropdown from '@/components/notification-dropdown';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -26,21 +27,7 @@ export function AppSidebarHeader({
             </div>
 
             <div className="flex items-center gap-2">
-                {/* Notification Icon with Badge */}
-                <div className="relative">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="relative h-9 w-9 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                        title="Notifications"
-                    >
-                        <Bell className="h-4 w-4" />
-                        <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d97757] opacity-75" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#d97757]" />
-                        </span>
-                    </Button>
-                </div>
+                <NotificationDropdown />
 
                 {/* Theme Mode Toggle (Dark / Light / System) */}
                 <DropdownMenu>
