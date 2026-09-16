@@ -860,7 +860,9 @@ export default function TodosIndex({
                     setIsCreateModalOpen(false);
                     setCreateFiles([]);
                 }}
+                icon={<Plus className="h-5 w-5" />}
                 title="Buat Tugas Baru"
+                description="Isi detail tugas, tentukan prioritas, penanggung jawab, dan lampirkan berkas untuk tim Anda."
             >
                 <form
                     onSubmit={handleCreateSubmit}
@@ -1054,7 +1056,9 @@ export default function TodosIndex({
             <Modal
                 isOpen={Boolean(editingTodo)}
                 onClose={() => setEditingTodo(null)}
+                icon={<Pencil className="h-5 w-5" />}
                 title="Edit Tugas"
+                description="Perbarui informasi tugas, ubah status alur kerja, atau atur ulang penanggung jawab."
             >
                 <form
                     onSubmit={handleEditSubmit}

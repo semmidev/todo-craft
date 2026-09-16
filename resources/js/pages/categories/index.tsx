@@ -152,7 +152,9 @@ export default function CategoriesIndex({
             <Modal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
-                title="Kategori Baru"
+                icon={<Tag className="h-5 w-5" />}
+                title="Buat Kategori Baru"
+                description="Tambahkan kategori baru dengan warna lencana khusus untuk mengelompokkan tugas tim."
                 maxWidth="md"
             >
                 <form

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 export interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
+    icon?: React.ReactNode;
     title?: React.ReactNode;
     description?: React.ReactNode;
     children: React.ReactNode;
@@ -24,6 +25,7 @@ const maxWidthClasses = {
 export default function Modal({
     isOpen,
     onClose,
+    icon,
     title,
     description,
     children,
@@ -79,24 +81,31 @@ export default function Modal({
                         )}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {(title || description) && (
+                        {(title || description || icon) && (
                             <div className="flex items-start justify-between pb-4 mb-4 border-b border-border/60">
-                                <div className="space-y-1">
-                                    {title && (
-                                        <h2 className="text-xl font-bold tracking-tight text-foreground">
-                                            {title}
-                                        </h2>
+                                <div className="flex items-start gap-3">
+                                    {icon && (
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-2xs">
+                                            {icon}
+                                        </div>
                                     )}
-                                    {description && (
-                                        <p className="text-sm text-muted-foreground">
-                                            {description}
-                                        </p>
-                                    )}
+                                    <div className="space-y-0.5">
+                                        {title && (
+                                            <h2 className="text-xl font-bold tracking-tight text-foreground">
+                                                {title}
+                                            </h2>
+                                        )}
+                                        {description && (
+                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                {description}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                                    className="rounded-lg p-1 text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer shrink-0 ml-2"
                                     aria-label="Tutup modal"
                                 >
                                     <X className="h-5 w-5" />
