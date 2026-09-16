@@ -1,84 +1,44 @@
-# 📝 TodoCraft — Modern Team Task & Reminder Platform
+# Technical Documentation — TodoCraft
 
-**TodoCraft** adalah aplikasi manajemen tugas (*Todo & Task Management*) modern berbasis tim yang dilengkapi dengan fitur kolaborasi, pengingat otomatis ala *Google Calendar*, serta sistem **In-App Notifications** interaktif secara real-time.
-
-Aplikasi ini dibangun menggunakan arsitektur monolitik modern berbasis **Laravel**, **Inertia.js v3**, **React 19**, **TypeScript**, dan **Tailwind CSS v4**.
+Dokumentasi teknis untuk pengoperasian, konfigurasi environment, pengujian, dan arsitektur aplikasi **TodoCraft**.
 
 ---
 
-## ✨ Fitur Utama
+## 🛠️ Tech Stack
 
-### 👥 1. Manajemen Tim & Kolaborasi (*Multi-Tenant*)
-- **Pembuatan & Perpindahan Tim**: Pengguna dapat membuat beberapa tim dan beralih antar tim (*Team Switcher*).
-- **Manajemen Anggota**: Daftar anggota tim berbasis *Database Querying* dengan fitur pencarian instan (*Debounced 350ms*), filter peran, pengurutan kolom, dan paginasi.
-- **Sistem Peran & Izin**: Peran hirarkis (*Owner*, *Admin*, *Member*) menggunakan `spatie/laravel-permission`.
-- **Undangan Tim & Modal Interaktif**: Fitur kirim undangan via email dan modal konfirmasi gabung tim (*Pending Invitations Modal*).
-
-### 📋 2. Manajemen Tugas & Todo
-- **Status & Prioritas**: Pengelolaan status (*Pending*, *In Progress*, *Completed*, *Archived*) dan prioritas (*Low*, *Medium*, *High*, *Urgent*).
-- **Pengingat Ala Google Calendar**: Set pengingat fleksibel (pada saat tenggat, 15 menit, 30 menit, 1 jam, 1 hari, 2 hari, atau 1 minggu sebelum deadline).
-- **Penanggung Jawab & Kategori**: Penugasan tugas ke anggota tim tertentu serta pengelompokan kategori dengan warna dan ikon kustom.
-- **Subtugas & Lampiran Berkas**: Checklist item subtugas dan *presigned file uploads* (Spatie MediaLibrary / AWS S3).
-- **Keyboard Shortcuts**: Pintasan keyboard (misal: tombol `c` untuk membuka modal pembuatan todo).
-
-### 🔔 3. Sistem Notifikasi In-App & Pengingat Otomatis
-- **Pengiriman Pengingat Otomatis**: Artisan Command `todos:send-reminders` yang berjalan setiap menit via scheduler untuk memeriksa dan mengirim notifikasi pengingat ke pengguna.
-- **Bell Top Bar & Lonceng Interaktif**: Lonceng notifikasi di header utama aplikasi dengan *unread count badge*, pembaruan berkala, serta aksi cepat *Tandai Semua Dibaca*.
-- **Integrasi Modal Langsung**: Mengklik notifikasi undangan tim akan langsung memunculkan modal persetujuan bergabung.
-- **Pusat Notifikasi (`/notifications`)**: Halaman khusus untuk mengelola seluruh notifikasi dengan filter tab (*Semua*, *Belum Dibaca*), penanda dibaca, dan penghapusan.
-
-### 🔐 4. Autentikasi & Keamanan Tingkat Tinggi
-- **Laravel Fortify**: Login, Registrasi, Lupa Password, Verifikasi Email, dan Konfirmasi Password.
-- **Google Socialite**: Autentikasi mudah menggunakan akun Google.
-- **Two-Factor Authentication (2FA)**: Kode QR 2FA dan recovery codes.
-- **Passkeys (WebAuthn)**: Autentikasi modern berbasis biometrik/hardware passkey.
-
----
-
-## 🛠️ Teknologi Utama (*Tech Stack*)
-
-- **Backend Framework**: [Laravel 11 / 13](https://laravel.com) (PHP 8.3+)
-- **Frontend SPA Integration**: [Inertia.js v3](https://inertiajs.com) (React 19, TypeScript)
-- **Styling & UI**: [Tailwind CSS v4](https://tailwindcss.com), [Radix UI Components](https://www.radix-ui.com), [Framer Motion](https://www.framer.com/motion/), Lucide Icons
-- **Autentikasi**: Laravel Fortify, Laravel Socialite, Laravel Passkeys
-- **Routing & Types**: [Laravel Wayfinder](https://github.com/laravel/wayfinder) (Auto-generated TypeScript functions for Laravel routes)
-- **Database & Query**: MySQL / PostgreSQL / SQLite, `spatie/laravel-query-builder`, `spatie/laravel-permission`
-- **Pengujian & Formatter**: [Pest PHP 5](https://pestphp.com), [Laravel Pint](https://laravel.com/docs/pint)
+- **Backend**: PHP 8.3+, Laravel 11 / 13, Laravel Fortify, Laravel Socialite, Laravel Passkeys
+- **Frontend**: React 19, Inertia.js v3, TypeScript, Tailwind CSS v4, Radix UI, Framer Motion, Lucide Icons
+- **Routing & Types**: Laravel Wayfinder (`@/actions`, `@/routes`)
+- **Database & Query**: MySQL / PostgreSQL / SQLite, `spatie/laravel-query-builder`, `spatie/laravel-permission`, `spatie/laravel-activitylog`, `spatie/laravel-medialibrary`
+- **Testing & Quality**: Pest PHP 5, Laravel Pint, PHPStan / Larastan
 
 ---
 
 ## 📋 Prasyarat Sistem
 
-Pastikan perangkat Anda telah terpasang kebutuhan berikut:
-- **PHP** `>= 8.3` (dengan ekstensi `pdo`, `mbstring`, `openssl`, `bcmath`, `curl`)
+- **PHP** `>= 8.3` (ekstensi: `pdo`, `mbstring`, `openssl`, `bcmath`, `curl`)
 - **Composer** `>= 2.6`
 - **Node.js** `>= 20.x` & **npm** `>= 10.x`
 - **Database Server**: MySQL 8.x / PostgreSQL 15+ / SQLite3
 
 ---
 
-## ⚙️ Panduan Instalasi & Pengoperasian Lokal
+## ⚙️ Setup Environment & Pengoperasian Lokal
 
-### 1. Clone Repository & Masuk ke Direktori Project
-```bash
-git clone https://github.com/semmidev/todo-craft.git
-cd todo-craft
-```
-
-### 2. Install Dependensi PHP & JavaScript
+### 1. Instalasi Dependensi
 ```bash
 composer install
 npm install
 ```
 
-### 3. Salin File Konfigurasi Environment & Generate Key
+### 2. Konfigurasi File `.env` & Application Key
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-### 4. Konfigurasi Database pada `.env`
-Buka file `.env` dan sesuaikan kredensial database Anda (contoh untuk MySQL):
+### 3. Konfigurasi Database & Migrasi
+Sesuaikan kredensial database pada `.env`:
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -87,100 +47,94 @@ DB_DATABASE=todo_craft
 DB_USERNAME=root
 DB_PASSWORD=
 ```
-*(Jika menggunakan SQLite, buat file `database/database.sqlite` dan atur `DB_CONNECTION=sqlite`)*.
 
-### 5. Jalankan Migrasi & Database Seeder
+Jalankan migrasi database beserta seeder:
 ```bash
 php artisan migrate:fresh --seed
 ```
 
-### 6. Build Asset Frontend & Jalankan Development Server
-Untuk menjalankan seluruh layanan secara bersamaan (Vite Dev Server + Laravel HTTP Server):
+### 4. Menjalankan Development Server
+Perintah terpadu untuk menjalankan HTTP Server & Vite Dev Server:
 ```bash
-npm run dev
-# ATAU jalankan perintah bawaan Laravel Artisan Dev:
 php artisan dev
+# ATAU
+npm run dev
 ```
 
-Aplikasi dapat diakses melalui browser di: `http://localhost:8000` (atau URL yang ditampilkan pada terminal).
+Aplikasi berjalan di: `http://localhost:8000`.
 
 ---
 
-## ⏰ Konfigurasi Scheduler Cron (Pengingat Todo)
+## ⏰ Background Scheduler & Task Runner
 
-Untuk menguji fitur pengingat tugas ala *Google Calendar*:
-
-### Jalankan Command Pengingat Manual:
+### Command Pengingat Todo:
 ```bash
 php artisan todos:send-reminders
 ```
 
-### Jalankan Scheduler Laravel dalam Mode Dev:
+### Menjalankan Scheduler (Dev Mode):
 ```bash
 php artisan schedule:work
 ```
-*(Scheduler akan secara otomatis mengeksekusi `todos:send-reminders` setiap menit untuk mengecek tugas yang telah memasuki waktu pengingat)*.
+*(Scheduler mengeksekusi `todos:send-reminders` setiap menit untuk memproses queue notifikasi pengingat)*.
 
 ---
 
-## 🧪 Pengujian & Kualitas Kode
+## 🧪 Perintah Testing & Code Quality
 
-Aplikasi ini dilengkapi dengan suite pengujian otomatis berbasis **Pest PHP** dan pemformat kode **Laravel Pint**.
-
-### Menjalankan Automated Feature & Unit Tests:
+### Automated Testing (Pest):
 ```bash
 php artisan test --compact
-# ATAU menggunakan pest secara langsung:
+# ATAU
 vendor/bin/pest
 ```
 
-### Memeriksa dan Memperbaiki Format Kode PHP:
+### Code Formatting (Laravel Pint):
 ```bash
 vendor/bin/pint --dirty --format agent
 ```
 
-### Memeriksa Type Safety TypeScript:
+### Static Analysis & Type Checking:
 ```bash
+# TypeScript Type Check
 npm run types:check
+
+# PHPStan Static Analysis
+vendor/bin/phpstan analyse
 ```
 
-### Membangun Production Bundle Asset:
+### Build Production Assets:
 ```bash
 npm run build
 ```
 
 ---
 
-## 📁 Struktur Direktori Utama
+## 📁 Struktur Arsitektur Project
 
 ```text
 todo-craft/
 ├── app/
-│   ├── Console/Commands/       # Artisan Commands (SendTodoReminders.php)
-│   ├── Data/                   # Spatie Laravel Data Objects
-│   ├── Http/Controllers/       # Controller API & Inertia Controllers
-│   ├── Models/                 # Eloquent Models (Todo, Team, User, Notification)
-│   └── Notifications/          # Laravel Notification Classes (TodoReminder, TeamInvitation)
+│   ├── Console/Commands/       # Custom Artisan Commands (SendTodoReminders)
+│   ├── Data/                   # Data Transfer Objects (Spatie Laravel Data)
+│   ├── Enums/                  # Application Enums (TeamRole, TodoPriority, dll)
+│   ├── Http/Controllers/       # API & Inertia Controllers
+│   ├── Models/                 # Eloquent Models & Relationships
+│   └── Notifications/          # Database & Mail Notifications
 ├── database/
-│   ├── migrations/             # Database Schema Migrations
-│   ├── factories/              # Model Factories untuk Testing
+│   ├── factories/              # Database Factories
+│   ├── migrations/             # Schema Migrations
 │   └── seeders/                # Database Seeders
 ├── resources/
 │   └── js/
-│       ├── actions/            # Typed Wayfinder Action Handlers
-│       ├── components/         # Komponen UI React (NotificationDropdown, SearchableSelect, dll)
-│       ├── layouts/            # App & Auth Layouts
-│       ├── pages/              # Halaman-halaman Inertia React (todos, notifications, teams)
-│       └── routes/             # Typed Wayfinder Route Helpers
+│       ├── actions/            # Wayfinder Controller Action Types
+│       ├── components/         # Shared React Components & UI Primitives
+│       ├── layouts/            # App Layouts & Sidebar Templates
+│       ├── pages/              # Inertia React Page Components
+│       └── routes/             # Wayfinder Route Functions
 ├── routes/
-│   ├── console.php             # Console Scheduler Routes (everyMinute)
-│   └── web.php                 # Web Application Routes
+│   ├── console.php             # Scheduled Artisan Commands
+│   └── web.php                 # Web & API Endpoint Definitions
 └── tests/
-    └── Feature/                # Pest Automated Feature Tests
+    └── Feature/                # Pest Automated Tests
 ```
-
----
-
-## 📄 Lisensi
-
-Proyek ini dirilis di bawah lisensi [MIT License](LICENSE).
