@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\Teams\CreateTeam;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,10 @@ use Throwable;
 
 class GoogleController extends Controller
 {
-    public function __construct(private CreateTeam $createTeam) {}
+    public function __construct(
+        private CreateTeam $createTeam,
+        private AvatarService $avatarService,
+    ) {}
 
     /**
      * Redirect the user to the Google authentication page.
@@ -43,20 +47,31 @@ class GoogleController extends Controller
             ->orWhere('email', $googleUser->getEmail())
             ->first();
 
+        $googleAvatarUrl = $googleUser->getAvatar();
+
         if ($user) {
+            $updates = [];
             if (! $user->google_id) {
-                $user->update([
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $user->avatar ?? $googleUser->getAvatar(),
-                ]);
+                $updates['google_id'] = $googleUser->getId();
+            }
+
+            if (! $user->avatar && $googleAvatarUrl) {
+                $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
+                $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
+            }
+
+            if (! empty($updates)) {
+                $user->update($updates);
             }
         } else {
-            $user = DB::transaction(function () use ($googleUser) {
+            $user = DB::transaction(function () use ($googleUser, $googleAvatarUrl) {
+                $storedAvatar = $googleAvatarUrl ? $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl) : null;
+
                 $newUser = User::create([
                     'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Pengguna Google',
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
+                    'avatar' => $storedAvatar ?? $googleAvatarUrl,
                     'email_verified_at' => now(),
                     'password' => Hash::make(Str::random(32)),
                 ]);

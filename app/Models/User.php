@@ -6,12 +6,14 @@ namespace App\Models;
 use App\Concerns\HasTeams;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\PasskeyUser;
 use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -53,6 +55,28 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
         return $this->belongsToMany(Team::class, 'team_members', 'user_id', 'team_id')
             ->withPivot(['role'])
             ->withTimestamps();
+    }
+
+    /**
+     * Get the user's avatar URL.
+     *
+     * @return Attribute<string|null, void>
+     */
+    protected function avatar(): Attribute
+    {
+        return Attribute::make(
+            get: function (?string $value) {
+                if (! $value) {
+                    return null;
+                }
+
+                if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                    return $value;
+                }
+
+                return Storage::disk(config('filesystems.default', 's3'))->url($value);
+            }
+        );
     }
 
     /**
