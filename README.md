@@ -20,6 +20,38 @@ Dokumentasi teknis untuk pengoperasian, konfigurasi environment, pengujian, dan 
 - **Composer** `>= 2.6`
 - **Node.js** `>= 20.x` & **npm** `>= 10.x`
 - **Database Server**: MySQL 8.x / PostgreSQL 15+ / SQLite3
+- **Docker / Podman** *(opsional, jika menggunakan container)*
+
+---
+
+## 🐳 Docker & Makefile Workflows
+
+Jika menggunakan Docker / Podman untuk mengelola layanan infrastruktur pendukung (MySQL, Redis, Mailpit, RustFS/S3):
+
+### 1. Jalankan Container Infrastructure Development:
+```bash
+make up-dev
+# ATAU (menggunakan docker compose secara langsung):
+docker compose -f compose.dev.yml up -d
+```
+
+### 2. Hentikan Container:
+```bash
+make down-dev
+# ATAU
+docker compose -f compose.dev.yml down
+```
+
+### 3. Perintah Utama Makefile:
+- `make setup` : Setup awal proyek secara otomatis (composer, env, key generate, storage link, migrate --seed, npm install, build, wayfinder).
+- `make up-dev` : Menjalankan container Docker dev (MySQL, Redis, Mailpit, S3).
+- `make down-dev` : Menghentikan container Docker dev.
+- `make run` / `make dev` : Menjalankan dev server Laravel & Vite secara bersamaan (`composer run dev`).
+- `make fresh` : Reset database & seeder data (`php artisan migrate:fresh --seed`).
+- `make test` : Menjalankan suite pengujian Pest (`php artisan test --compact`).
+- `make lint` : Memformat kode PHP dengan Laravel Pint.
+- `make wayfinder` : Meng-generate fungsi TypeScript untuk Laravel routes & actions.
+- `make clean` : Membersihkan seluruh cache aplikasi (config, route, view, cache).
 
 ---
 
@@ -51,12 +83,16 @@ DB_PASSWORD=
 Jalankan migrasi database beserta seeder:
 ```bash
 php artisan migrate:fresh --seed
+# ATAU
+make fresh
 ```
 
 ### 4. Menjalankan Development Server
 Perintah terpadu untuk menjalankan HTTP Server & Vite Dev Server:
 ```bash
 php artisan dev
+# ATAU
+make dev
 # ATAU
 npm run dev
 ```
@@ -84,6 +120,8 @@ php artisan schedule:work
 
 ### Automated Testing (Pest):
 ```bash
+make test
+# ATAU
 php artisan test --compact
 # ATAU
 vendor/bin/pest
@@ -91,6 +129,8 @@ vendor/bin/pest
 
 ### Code Formatting (Laravel Pint):
 ```bash
+make lint
+# ATAU
 vendor/bin/pint --dirty --format agent
 ```
 
@@ -105,6 +145,8 @@ vendor/bin/phpstan analyse
 
 ### Build Production Assets:
 ```bash
+make build
+# ATAU
 npm run build
 ```
 
@@ -135,6 +177,8 @@ todo-craft/
 ├── routes/
 │   ├── console.php             # Scheduled Artisan Commands
 │   └── web.php                 # Web & API Endpoint Definitions
+├── Makefile                    # Developer Command Palette
+├── compose.dev.yml             # Docker Compose Dev Infrastructure (MySQL, Redis, Mailpit, S3)
 └── tests/
     └── Feature/                # Pest Automated Tests
 ```
