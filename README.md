@@ -87,14 +87,14 @@ php artisan migrate:fresh --seed
 make fresh
 ```
 
-### 4. Menjalankan Development Server
-Perintah terpadu untuk menjalankan HTTP Server & Vite Dev Server:
+### 4. Menjalankan Development Server & Background Scheduler
+Perintah terpadu untuk menjalankan HTTP Server, Vite Dev Server, dan **Schedule Worker** (`php artisan schedule:work`) secara bersamaan (*concurrently*):
 ```bash
-php artisan dev
-# ATAU
 make dev
 # ATAU
-npm run dev
+make run
+# ATAU
+composer run dev
 ```
 
 Aplikasi berjalan di: `http://localhost:8000`.
@@ -103,12 +103,14 @@ Aplikasi berjalan di: `http://localhost:8000`.
 
 ## ⏰ Background Scheduler & Task Runner
 
-### Command Pengingat Todo:
+Perintah `make dev` / `make run` secara otomatis sudah menjalankan `php artisan schedule:work` secara paralel. Namun Anda juga dapat menjalankannya secara terpisah jika diperlukan:
+
+### Command Pengingat Todo Manual:
 ```bash
 php artisan todos:send-reminders
 ```
 
-### Menjalankan Scheduler (Dev Mode):
+### Menjalankan Scheduler Secara Terpisah:
 ```bash
 php artisan schedule:work
 ```

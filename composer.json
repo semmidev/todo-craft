@@ -61,7 +61,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan dev"
+            "npx concurrently -k -c \"blue,magenta,yellow\" -n \"laravel,vite,schedule\" \"php artisan serve\" \"npx vite\" \"php artisan schedule:work\""
         ],
         "lint": [
             "pint --parallel"

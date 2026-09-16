@@ -39,7 +39,7 @@ logs: ## Tail Docker container logs
 
 dev: run ## Alias for run
 
-run: ## Start local dev servers (Laravel + Vite concurrent processes)
+run: ## Start local dev servers (Laravel + Vite + Scheduler concurrent processes)
 	@composer run dev
 
 migrate: ## Run pending database migrations
