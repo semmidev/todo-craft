@@ -15,13 +15,13 @@ export default function Heading({
 }) {
     if (variant === 'small') {
         return (
-            <header className="border-border flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <header className="flex flex-col gap-2 border-b border-[#e5e5e5] pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#262626]">
                 <div className="space-y-0.5">
-                    <h3 className="text-foreground text-lg font-bold tracking-tight">
+                    <h3 className="text-[#0a0a0a] text-base font-medium tracking-tight dark:text-white">
                         {title}
                     </h3>
                     {description && (
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-[#737373] text-xs dark:text-[#a3a3a3]">
                             {description}
                         </p>
                     )}
@@ -34,21 +34,21 @@ export default function Heading({
     }
 
     return (
-        <header className="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-4 border-b border-[#e5e5e5] pb-6 sm:flex-row sm:items-center sm:justify-between dark:border-[#262626]">
             <div className="space-y-1">
                 {badge && (
                     <div className="inline-flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-[#d97757]" />
-                        <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                        <span className="h-2 w-2 rounded-full bg-[#2563eb]" />
+                        <span className="text-[#737373] text-xs font-medium tracking-wider uppercase dark:text-[#a3a3a3]">
                             {badge}
                         </span>
                     </div>
                 )}
-                <h1 className="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
+                <h1 className="text-[#0a0a0a] text-2xl font-medium tracking-tight md:text-3xl dark:text-white">
                     {title}
                 </h1>
                 {description && (
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-[#737373] text-sm dark:text-[#a3a3a3]">
                         {description}
                     </p>
                 )}

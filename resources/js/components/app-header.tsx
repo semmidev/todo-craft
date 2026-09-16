@@ -74,7 +74,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
 
     return (
         <>
-            <div className="border-sidebar-border/80 border-b">
+            <div className="sticky top-0 z-30 border-b border-[#e5e5e5] bg-white/90 backdrop-blur-md dark:border-[#262626] dark:bg-[#0a0a0a]/90">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">

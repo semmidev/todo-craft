@@ -7,11 +7,11 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-black/5 p-1 dark:bg-white/10">
+                <AppLogoIcon className="size-full object-contain" />
             </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">
+            <div className="ml-1.5 grid flex-1 text-left text-sm">
+                <span className="mb-0.5 truncate leading-tight font-medium text-[#0a0a0a] dark:text-white">
                     {name}
                 </span>
             </div>

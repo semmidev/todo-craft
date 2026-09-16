@@ -7,27 +7,46 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    /* DESIGN.md Tokens */
-    --color-bone-parchment: #f8f8f6;
-    --color-paper-white: #ffffff;
-    --color-soft-stone: #efeeeb;
-    --color-carbon-ink: #121212;
-    --color-graphite: #373734;
-    --color-ashen: #7b7974;
-    --color-pebble: #9c9a92;
-    --color-mist: #b7b7b5;
-    --color-chalk: #e7e6e1;
-    --color-obsidian: #000000;
-    --color-clay: #d97757;
+    /* DESIGN.md Tokens - Dub.co Style */
+    --color-canvas-white: #ffffff;
+    --color-paper-mist: #f5f5f5;
+    --color-ash: #e5e5e5;
+    --color-smoke: #d4d4d4;
+    --color-pebble: #c8c8c8;
+    --color-midnight-ink: #0a0a0a;
+    --color-charcoal: #171717;
+    --color-graphite: #262626;
+    --color-slate: #404040;
+    --color-steel: #525252;
+    --color-fog: #737373;
+    --color-silver: #a3a3a3;
+    --color-electric-blue: #2563eb;
+    --color-deep-sapphire: #1e40af;
+    --color-soft-mint: #dcfce7;
+    --color-vivid-green: #16a34a;
+    --color-tangerine: #ea580c;
+    --color-lavender: #7c3aed;
+    --color-conic-spectrum: #8b5cf6;
+    --color-primary-action-fill: #000000;
 
-    --font-serif: 'Source Serif 4', Charter, Georgia, serif;
-    --font-sans:
-        'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    /* Typography */
+    --font-satoshi: 'Satoshi', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
+    /* Radius */
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
+    /* Shadows */
+    --shadow-subtle: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+    --shadow-sm: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+    --shadow-subtle-2: rgba(0, 0, 0, 0.1) 0px 0px 0px 4px;
+    --shadow-md: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
+    --shadow-lg: rgba(0, 0, 0, 0.09) 0px 20px 20px 0px;
+
+    /* System Mappings */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 
@@ -67,64 +86,64 @@
 }
 
 :root {
-    --background: #f8f8f6;
-    --foreground: #121212;
+    --background: #ffffff;
+    --foreground: #171717;
     --card: #ffffff;
-    --card-foreground: #121212;
+    --card-foreground: #171717;
     --popover: #ffffff;
-    --popover-foreground: #121212;
-    --primary: #121212;
-    --primary-foreground: #f8f8f6;
-    --secondary: #efeeeb;
-    --secondary-foreground: #121212;
-    --muted: #efeeeb;
-    --muted-foreground: #7b7974;
-    --accent: #efeeeb;
-    --accent-foreground: #121212;
-    --destructive: #d97757;
+    --popover-foreground: #171717;
+    --primary: #000000;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #171717;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --accent: #f5f5f5;
+    --accent-foreground: #171717;
+    --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #e7e6e1;
-    --input: #b7b7b5;
-    --ring: #121212;
+    --border: #e5e5e5;
+    --input: #0a0a0a;
+    --ring: #2563eb;
     --radius: 0.5rem;
-    --sidebar: #f8f8f6;
-    --sidebar-foreground: #121212;
-    --sidebar-primary: #121212;
-    --sidebar-primary-foreground: #f8f8f6;
-    --sidebar-accent: #efeeeb;
-    --sidebar-accent-foreground: #121212;
-    --sidebar-border: #e7e6e1;
-    --sidebar-ring: #121212;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #171717;
+    --sidebar-primary: #000000;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #dbeaff;
+    --sidebar-accent-foreground: #171717;
+    --sidebar-border: #e5e5e5;
+    --sidebar-ring: #2563eb;
 }
 
 .dark {
-    --background: #121212;
-    --foreground: #f8f8f6;
-    --card: #1c1c1a;
-    --card-foreground: #f8f8f6;
-    --popover: #1c1c1a;
-    --popover-foreground: #f8f8f6;
-    --primary: #f8f8f6;
-    --primary-foreground: #121212;
-    --secondary: #282826;
-    --secondary-foreground: #f8f8f6;
-    --muted: #282826;
-    --muted-foreground: #9c9a92;
-    --accent: #282826;
-    --accent-foreground: #f8f8f6;
-    --destructive: #d97757;
+    --background: #0a0a0a;
+    --foreground: #f5f5f5;
+    --card: #171717;
+    --card-foreground: #f5f5f5;
+    --popover: #171717;
+    --popover-foreground: #f5f5f5;
+    --primary: #ffffff;
+    --primary-foreground: #0a0a0a;
+    --secondary: #262626;
+    --secondary-foreground: #f5f5f5;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --accent: #262626;
+    --accent-foreground: #f5f5f5;
+    --destructive: #ef4444;
     --destructive-foreground: #ffffff;
-    --border: #2f2f2c;
-    --input: #373734;
-    --ring: #f8f8f6;
-    --sidebar: #121212;
-    --sidebar-foreground: #f8f8f6;
-    --sidebar-primary: #f8f8f6;
-    --sidebar-primary-foreground: #121212;
-    --sidebar-accent: #282826;
-    --sidebar-accent-foreground: #f8f8f6;
-    --sidebar-border: #2f2f2c;
-    --sidebar-ring: #f8f8f6;
+    --border: #262626;
+    --input: #e5e5e5;
+    --ring: #2563eb;
+    --sidebar: #0a0a0a;
+    --sidebar-foreground: #f5f5f5;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #0a0a0a;
+    --sidebar-accent: #1e3a8a;
+    --sidebar-accent-foreground: #f5f5f5;
+    --sidebar-border: #262626;
+    --sidebar-ring: #2563eb;
 }
 
 @layer base {
@@ -133,6 +152,17 @@
     }
 
     body {
-        @apply bg-background text-foreground font-sans;
+        @apply bg-background text-foreground font-sans antialiased;
     }
 }
+
+@layer utilities {
+    .bg-grid-pattern {
+        background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+    .dark .bg-grid-pattern {
+        background-image: radial-gradient(#262626 1px, transparent 1px);
+    }
+}
+

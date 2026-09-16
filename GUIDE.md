@@ -31,7 +31,7 @@
 ## 1. Struktur Folder
 
 ```
-todo-app/
+todo-craft/
 ├── app/                        ← Kode inti aplikasi kamu
 │   ├── Actions/                ← Logika bisnis spesifik (Form Actions Fortify)
 │   ├── Concerns/               ← PHP Trait yang reusable (GeneratesUniqueTeamSlugs)
