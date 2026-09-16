@@ -22,6 +22,7 @@ import ConfirmDialog from '@/components/confirm-dialog';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import Heading from '@/components/heading';
+import Modal from '@/components/modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -853,386 +854,367 @@ export default function TodosIndex({
             </div>
 
             {/* Create Todo Modal */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-                    <div className="bg-card border-border max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border p-6 shadow-2xl">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold">
-                                Buat Tugas Baru
-                            </h2>
-                            <button
-                                onClick={() => setIsCreateModalOpen(false)}
-                                className="text-muted-foreground hover:text-foreground text-sm font-bold cursor-pointer"
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => {
+                    setIsCreateModalOpen(false);
+                    setCreateFiles([]);
+                }}
+                title="Buat Tugas Baru"
+            >
+                <form
+                    onSubmit={handleCreateSubmit}
+                    className="space-y-4"
+                >
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Judul Tugas *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={createForm.data.title}
+                            onChange={(e) =>
+                                createForm.setData('title', e.target.value)
+                            }
+                            placeholder="Masukkan judul tugas..."
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                        {createForm.errors.title && (
+                            <p className="text-destructive mt-1 text-xs">
+                                {createForm.errors.title}
+                            </p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Deskripsi
+                        </label>
+                        <textarea
+                            rows={3}
+                            value={createForm.data.description}
+                            onChange={(e) =>
+                                createForm.setData('description', e.target.value)
+                            }
+                            placeholder="Deskripsi detail atau langkah-langkah..."
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Prioritas
+                            </label>
+                            <select
+                                value={createForm.data.priority}
+                                onChange={(e: any) =>
+                                    createForm.setData('priority', e.target.value)
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
                             >
-                                ✕
-                            </button>
+                                <option value="low">Rendah</option>
+                                <option value="medium">Sedang</option>
+                                <option value="high">Tinggi</option>
+                                <option value="urgent">Mendesak</option>
+                            </select>
                         </div>
 
-                        <form
-                            onSubmit={handleCreateSubmit}
-                            className="space-y-4"
-                        >
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Judul Tugas *
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={createForm.data.title}
-                                    onChange={(e) =>
-                                        createForm.setData('title', e.target.value)
-                                    }
-                                    placeholder="Masukkan judul tugas..."
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                                {createForm.errors.title && (
-                                    <p className="text-destructive mt-1 text-xs">
-                                        {createForm.errors.title}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Deskripsi
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    value={createForm.data.description}
-                                    onChange={(e) =>
-                                        createForm.setData('description', e.target.value)
-                                    }
-                                    placeholder="Deskripsi detail atau langkah-langkah..."
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Prioritas
-                                    </label>
-                                    <select
-                                        value={createForm.data.priority}
-                                        onChange={(e: any) =>
-                                            createForm.setData('priority', e.target.value)
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="low">Rendah</option>
-                                        <option value="medium">Sedang</option>
-                                        <option value="high">Tinggi</option>
-                                        <option value="urgent">Mendesak</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Kategori
-                                    </label>
-                                    <select
-                                        value={createForm.data.category_id}
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'category_id',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="">Tanpa Kategori</option>
-                                        {categories.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Penanggung Jawab
-                                    </label>
-                                    <select
-                                        value={createForm.data.assigned_to_id}
-                                        onChange={(e) =>
-                                            createForm.setData(
-                                                'assigned_to_id',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="">
-                                            Pilih Penanggung Jawab
-                                        </option>
-                                        {teamMembers.map((m) => (
-                                            <option key={m.id} value={m.id}>
-                                                {m.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Tenggat Waktu
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        value={createForm.data.due_date}
-                                        onChange={(e) =>
-                                            createForm.setData('due_date', e.target.value)
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    />
-                                </div>
-                            </div>                             <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Lampiran File
-                                </label>
-                                <div className="bg-accent/20 border-border space-y-3 rounded-xl border p-4">
-                                    <input
-                                        type="file"
-                                        multiple
-                                        onChange={(e) => {
-                                            if (e.target.files) {
-                                                setCreateFiles(Array.from(e.target.files));
-                                            }
-                                        }}
-                                        className="w-full text-xs"
-                                    />
-                                    {createFiles.length > 0 && (
-                                        <div className="space-y-1">
-                                            {createFiles.map((file, idx) => (
-                                                <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
-                                                    <span className="truncate font-medium">{file.name}</span>
-                                                    <span className="ml-2 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {isPresignedUploading && (
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-xs text-muted-foreground font-medium">
-                                                <span>Mengunggah berkas...</span>
-                                                <span>{progress}%</span>
-                                            </div>
-                                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                                                <div
-                                                    className="h-full bg-primary transition-all duration-300"
-                                                    style={{ width: `${progress}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="border-border flex justify-end gap-2 border-t pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => {
-                                        setIsCreateModalOpen(false);
-                                        setCreateFiles([]);
-                                    }}
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    loading={createForm.processing || isPresignedUploading || isSubmittingCreate}
-                                    disabled={createForm.processing || isPresignedUploading || isSubmittingCreate}
-                                >
-                                    Buat Tugas
-                                </Button>
-                            </div>
-                        </form>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Kategori
+                            </label>
+                            <select
+                                value={createForm.data.category_id}
+                                onChange={(e) =>
+                                    createForm.setData(
+                                        'category_id',
+                                        e.target.value,
+                                    )
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="">Tanpa Kategori</option>
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                </div>
-            )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Penanggung Jawab
+                            </label>
+                            <select
+                                value={createForm.data.assigned_to_id}
+                                onChange={(e) =>
+                                    createForm.setData(
+                                        'assigned_to_id',
+                                        e.target.value,
+                                    )
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="">
+                                    Pilih Penanggung Jawab
+                                </option>
+                                {teamMembers.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Tenggat Waktu
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={createForm.data.due_date}
+                                onChange={(e) =>
+                                    createForm.setData('due_date', e.target.value)
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Lampiran File
+                        </label>
+                        <div className="bg-accent/20 border-border space-y-3 rounded-xl border p-4">
+                            <input
+                                type="file"
+                                multiple
+                                onChange={(e) => {
+                                    if (e.target.files) {
+                                        setCreateFiles(Array.from(e.target.files));
+                                    }
+                                }}
+                                className="w-full text-xs"
+                            />
+                            {createFiles.length > 0 && (
+                                <div className="space-y-1">
+                                    {createFiles.map((file, idx) => (
+                                        <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <span className="truncate font-medium">{file.name}</span>
+                                            <span className="ml-2 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {isPresignedUploading && (
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                                        <span>Mengunggah berkas...</span>
+                                        <span>{progress}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                                        <div
+                                            className="h-full bg-primary transition-all duration-300"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="border-border flex justify-end gap-2 border-t pt-4">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => {
+                                setIsCreateModalOpen(false);
+                                setCreateFiles([]);
+                            }}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            loading={createForm.processing || isPresignedUploading || isSubmittingCreate}
+                            disabled={createForm.processing || isPresignedUploading || isSubmittingCreate}
+                        >
+                            Buat Tugas
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Edit Todo Modal */}
-            {editingTodo && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-                    <div className="bg-card border-border max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-2xl border p-6 shadow-2xl">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold">
-                                Edit Tugas
-                            </h2>
-                            <button
-                                onClick={() => setEditingTodo(null)}
-                                className="text-muted-foreground hover:text-foreground text-sm font-bold cursor-pointer"
+            <Modal
+                isOpen={Boolean(editingTodo)}
+                onClose={() => setEditingTodo(null)}
+                title="Edit Tugas"
+            >
+                <form
+                    onSubmit={handleEditSubmit}
+                    className="space-y-4"
+                >
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Judul Tugas *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={editForm.data.title}
+                            onChange={(e) =>
+                                editForm.setData('title', e.target.value)
+                            }
+                            placeholder="Masukkan judul tugas..."
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                        {editForm.errors.title && (
+                            <p className="text-destructive mt-1 text-xs">
+                                {editForm.errors.title}
+                            </p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Deskripsi
+                        </label>
+                        <textarea
+                            rows={3}
+                            value={editForm.data.description}
+                            onChange={(e) =>
+                                editForm.setData('description', e.target.value)
+                            }
+                            placeholder="Deskripsi detail atau langkah-langkah..."
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Status
+                            </label>
+                            <select
+                                value={editForm.data.status}
+                                onChange={(e: any) =>
+                                    editForm.setData('status', e.target.value)
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
                             >
-                                ✕
-                            </button>
+                                <option value="pending">Menunggu</option>
+                                <option value="in_progress">Sedang Dikerjakan</option>
+                                <option value="completed">Selesai</option>
+                                <option value="archived">Diarsipkan</option>
+                            </select>
                         </div>
 
-                        <form
-                            onSubmit={handleEditSubmit}
-                            className="space-y-4"
-                        >
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Judul Tugas *
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={editForm.data.title}
-                                    onChange={(e) =>
-                                        editForm.setData('title', e.target.value)
-                                    }
-                                    placeholder="Masukkan judul tugas..."
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                                {editForm.errors.title && (
-                                    <p className="text-destructive mt-1 text-xs">
-                                        {editForm.errors.title}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Deskripsi
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    value={editForm.data.description}
-                                    onChange={(e) =>
-                                        editForm.setData('description', e.target.value)
-                                    }
-                                    placeholder="Deskripsi detail atau langkah-langkah..."
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Status
-                                    </label>
-                                    <select
-                                        value={editForm.data.status}
-                                        onChange={(e: any) =>
-                                            editForm.setData('status', e.target.value)
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="pending">Menunggu</option>
-                                        <option value="in_progress">Sedang Dikerjakan</option>
-                                        <option value="completed">Selesai</option>
-                                        <option value="archived">Diarsipkan</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Prioritas
-                                    </label>
-                                    <select
-                                        value={editForm.data.priority}
-                                        onChange={(e: any) =>
-                                            editForm.setData('priority', e.target.value)
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="low">Rendah</option>
-                                        <option value="medium">Sedang</option>
-                                        <option value="high">Tinggi</option>
-                                        <option value="urgent">Mendesak</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Kategori
-                                    </label>
-                                    <select
-                                        value={editForm.data.category_id}
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'category_id',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="">Tanpa Kategori</option>
-                                        {categories.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                        Penanggung Jawab
-                                    </label>
-                                    <select
-                                        value={editForm.data.assigned_to_id}
-                                        onChange={(e) =>
-                                            editForm.setData(
-                                                'assigned_to_id',
-                                                e.target.value,
-                                            )
-                                        }
-                                        className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                    >
-                                        <option value="">
-                                            Pilih Penanggung Jawab
-                                        </option>
-                                        {teamMembers.map((m) => (
-                                            <option key={m.id} value={m.id}>
-                                                {m.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Tenggat Waktu (Waktu Lokal Anda)
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    value={editForm.data.due_date}
-                                    onChange={(e) =>
-                                        editForm.setData('due_date', e.target.value)
-                                    }
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                            </div>
-
-                            <div className="border-border flex justify-end gap-2 border-t pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => setEditingTodo(null)}
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    loading={editForm.processing}
-                                >
-                                    Simpan Perubahan
-                                </Button>
-                            </div>
-                        </form>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Prioritas
+                            </label>
+                            <select
+                                value={editForm.data.priority}
+                                onChange={(e: any) =>
+                                    editForm.setData('priority', e.target.value)
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="low">Rendah</option>
+                                <option value="medium">Sedang</option>
+                                <option value="high">Tinggi</option>
+                                <option value="urgent">Mendesak</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-            )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Kategori
+                            </label>
+                            <select
+                                value={editForm.data.category_id}
+                                onChange={(e) =>
+                                    editForm.setData(
+                                        'category_id',
+                                        e.target.value,
+                                    )
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="">Tanpa Kategori</option>
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                                Penanggung Jawab
+                            </label>
+                            <select
+                                value={editForm.data.assigned_to_id}
+                                onChange={(e) =>
+                                    editForm.setData(
+                                        'assigned_to_id',
+                                        e.target.value,
+                                    )
+                                }
+                                className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="">
+                                    Pilih Penanggung Jawab
+                                </option>
+                                {teamMembers.map((m) => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Tenggat Waktu (Waktu Lokal Anda)
+                        </label>
+                        <input
+                            type="datetime-local"
+                            value={editForm.data.due_date}
+                            onChange={(e) =>
+                                editForm.setData('due_date', e.target.value)
+                            }
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                    </div>
+
+                    <div className="border-border flex justify-end gap-2 border-t pt-4">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setEditingTodo(null)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            loading={editForm.processing}
+                        >
+                            Simpan Perubahan
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Delete Todo Confirmation Dialog */}
             <ConfirmDialog

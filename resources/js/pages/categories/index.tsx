@@ -3,6 +3,7 @@ import { Loader2, Plus, Tag, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import ConfirmDialog from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
+import Modal from '@/components/modal';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
@@ -148,92 +149,83 @@ export default function CategoriesIndex({
             </div>
 
             {/* Create Category Modal */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-                    <div className="bg-card border-border w-full max-w-md space-y-4 rounded-2xl border p-6 shadow-2xl">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold">Kategori Baru</h2>
-                            <button
-                                onClick={() => setIsCreateModalOpen(false)}
-                                className="text-muted-foreground font-bold cursor-pointer"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form
-                            onSubmit={handleCreateSubmit}
-                            className="space-y-4"
-                        >
-                            <div>
-                                <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
-                                    Nama Kategori *
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={data.name}
-                                    onChange={(e) =>
-                                        setData('name', e.target.value)
-                                    }
-                                    placeholder="mis. Sistem Desain"
-                                    className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
-                                />
-                                {errors.name && (
-                                    <p className="text-destructive mt-1 text-xs">
-                                        {errors.name}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="mb-2 block text-xs font-semibold tracking-wider uppercase">
-                                    Warna Lencana
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    {presetColors.map((c) => (
-                                        <button
-                                            key={c}
-                                            type="button"
-                                            onClick={() => setData('color', c)}
-                                            className={`h-8 w-8 rounded-full border-2 transition cursor-pointer ${
-                                                data.color === c
-                                                    ? 'border-foreground scale-110'
-                                                    : 'border-transparent'
-                                            }`}
-                                            style={{ backgroundColor: c }}
-                                        />
-                                    ))}
-                                    <input
-                                        type="color"
-                                        value={data.color}
-                                        onChange={(e) =>
-                                            setData('color', e.target.value)
-                                        }
-                                        className="h-8 w-8 cursor-pointer rounded-full border-0 bg-transparent"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="border-border flex justify-end gap-2 border-t pt-4">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                >
-                                    Batal
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    loading={processing}
-                                >
-                                    Simpan Kategori
-                                </Button>
-                            </div>
-                        </form>
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Kategori Baru"
+                maxWidth="md"
+            >
+                <form
+                    onSubmit={handleCreateSubmit}
+                    className="space-y-4"
+                >
+                    <div>
+                        <label className="mb-1 block text-xs font-semibold tracking-wider uppercase">
+                            Nama Kategori *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={data.name}
+                            onChange={(e) =>
+                                setData('name', e.target.value)
+                            }
+                            placeholder="mis. Sistem Desain"
+                            className="bg-background border-input w-full rounded-lg border px-3 py-2 text-sm"
+                        />
+                        {errors.name && (
+                            <p className="text-destructive mt-1 text-xs">
+                                {errors.name}
+                            </p>
+                        )}
                     </div>
-                </div>
-            )}
+
+                    <div>
+                        <label className="mb-2 block text-xs font-semibold tracking-wider uppercase">
+                            Warna Lencana
+                        </label>
+                        <div className="flex items-center gap-2">
+                            {presetColors.map((c) => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => setData('color', c)}
+                                    className={`h-8 w-8 rounded-full border-2 transition cursor-pointer ${
+                                        data.color === c
+                                            ? 'border-foreground scale-110'
+                                            : 'border-transparent'
+                                    }`}
+                                    style={{ backgroundColor: c }}
+                                />
+                            ))}
+                            <input
+                                type="color"
+                                value={data.color}
+                                onChange={(e) =>
+                                    setData('color', e.target.value)
+                                }
+                                className="h-8 w-8 cursor-pointer rounded-full border-0 bg-transparent"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="border-border flex justify-end gap-2 border-t pt-4">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsCreateModalOpen(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            loading={processing}
+                        >
+                            Simpan Kategori
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Delete Category Confirmation Dialog */}
             <ConfirmDialog
