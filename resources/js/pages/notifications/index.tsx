@@ -1,16 +1,15 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
     Bell,
     Calendar,
     Check,
     CheckCheck,
     ExternalLink,
-    Filter,
+    Loader2,
     Trash2,
     UserPlus,
 } from 'lucide-react';
-import { useState } from 'react';
-import { DataTablePagination } from '@/components/data-table/data-table-pagination';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Heading from '@/components/heading';
 import PendingInvitationsModal from '@/components/pending-invitations-modal';
 import { Badge } from '@/components/ui/badge';
@@ -53,20 +52,105 @@ export default function NotificationsIndex({
 
     const [filterTab, setFilterTab] = useState<'all' | 'unread'>('all');
 
-    const filteredItems = notifications.data.filter((item) => {
+    // State for infinite scroll list & pagination tracking
+    const [items, setItems] = useState<NotificationItemData[]>(notifications.data);
+    const [currentPage, setCurrentPage] = useState<number>(notifications.current_page ?? 1);
+    const [lastPage, setLastPage] = useState<number>(notifications.last_page ?? 1);
+    const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
+    // Sync initial notifications on page props update
+    useEffect(() => {
+        setItems(notifications.data);
+        setCurrentPage(notifications.current_page ?? 1);
+        setLastPage(notifications.last_page ?? 1);
+    }, [notifications.data, notifications.current_page, notifications.last_page]);
+
+    const hasMore = currentPage < lastPage;
+
+    // Load next page function
+    const loadMore = useCallback(async () => {
+        if (isLoadingMore || !hasMore) return;
+
+        setIsLoadingMore(true);
+        const nextPage = currentPage + 1;
+
+        try {
+            const res = await fetch(`/notifications?page=${nextPage}`, {
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const fetchedNotifications = data.notifications;
+                const newItems: NotificationItemData[] = fetchedNotifications.data ?? [];
+
+                setItems((prev) => {
+                    const existingIds = new Set(prev.map((i) => i.id));
+                    const uniqueNewItems = newItems.filter((i) => !existingIds.has(i.id));
+                    return [...prev, ...uniqueNewItems];
+                });
+
+                setCurrentPage(fetchedNotifications.current_page ?? nextPage);
+                setLastPage(fetchedNotifications.last_page ?? lastPage);
+            }
+        } catch (error) {
+            console.error('Failed to load more notifications:', error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [currentPage, hasMore, isLoadingMore, lastPage]);
+
+    // IntersectionObserver for infinite scroll sentinel
+    const observerTarget = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const target = observerTarget.current;
+        if (!target) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+                    loadMore();
+                }
+            },
+            { threshold: 0.2, rootMargin: '100px' }
+        );
+
+        observer.observe(target);
+
+        return () => {
+            if (target) observer.unobserve(target);
+        };
+    }, [hasMore, isLoadingMore, loadMore]);
+
+    const filteredItems = items.filter((item) => {
         if (filterTab === 'unread') return !item.read_at;
         return true;
     });
 
     const handleMarkAsRead = (id: string) => {
+        // Optimistic update
+        setItems((prev) =>
+            prev.map((item) =>
+                item.id === id ? { ...item, read_at: new Date().toISOString() } : item
+            )
+        );
         router.patch(`/notifications/${id}/read`, {}, { preserveScroll: true });
     };
 
     const handleMarkAllAsRead = () => {
+        // Optimistic update
+        const nowIso = new Date().toISOString();
+        setItems((prev) => prev.map((item) => ({ ...item, read_at: item.read_at ?? nowIso })));
         router.post('/notifications/mark-all-read', {}, { preserveScroll: true });
     };
 
     const handleDelete = (id: string) => {
+        // Optimistic update
+        setItems((prev) => prev.filter((item) => item.id !== id));
         router.delete(`/notifications/${id}`, { preserveScroll: true });
     };
 
@@ -138,7 +222,7 @@ export default function NotificationsIndex({
                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         }`}
                     >
-                        Semua ({notifications.total ?? notifications.data.length})
+                        Semua ({notifications.total ?? items.length})
                     </button>
                     <button
                         type="button"
@@ -253,12 +337,20 @@ export default function NotificationsIndex({
                         </div>
                     )}
 
-                    {/* Pagination */}
-                    {notifications.total && notifications.total > (notifications.per_page ?? 20) && (
-                        <div className="pt-4 border-t border-border">
-                            <DataTablePagination data={notifications} />
-                        </div>
-                    )}
+                    {/* Infinite Scroll Sentinel & Loading Indicator */}
+                    <div ref={observerTarget} className="py-4 text-center">
+                        {isLoadingMore && (
+                            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                Memuat notifikasi berikutnya...
+                            </div>
+                        )}
+                        {!hasMore && items.length > 0 && (
+                            <p className="text-xs text-muted-foreground/60 font-medium">
+                                Semua notifikasi telah dimuat
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -280,4 +372,3 @@ NotificationsIndex.layout = {
         { title: 'Notifikasi', href: '/notifications' },
     ],
 };
-

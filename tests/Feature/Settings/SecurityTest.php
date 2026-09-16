@@ -102,3 +102,59 @@ test('correct password must be provided to update password', function () {
         ->assertSessionHasErrors('current_password')
         ->assertRedirect(route('security.edit'));
 });
+
+test('google user without password can set password without current password', function () {
+    $user = User::factory()->create([
+        'google_id' => '1234567890',
+        'password' => null,
+    ]);
+
+    expect($user->hasPassword())->toBeFalse();
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->put(route('user-password.update'), [
+            'current_password' => '',
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('security.edit'));
+
+    $user->refresh();
+    expect($user->hasPassword())->toBeTrue()
+        ->and(Hash::check('new-secure-password', $user->password))->toBeTrue();
+});
+
+test('user cannot disconnect google account if password is not set', function () {
+    $user = User::factory()->create([
+        'google_id' => '1234567890',
+        'password' => null,
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->delete(route('settings.google.disconnect'));
+
+    $response->assertRedirect(route('security.edit'));
+    expect($user->refresh()->google_id)->toBe('1234567890');
+});
+
+test('user can disconnect google account if password is set', function () {
+    $user = User::factory()->create([
+        'google_id' => '1234567890',
+        'password' => Hash::make('password123'),
+    ]);
+
+    $response = $this
+        ->actingAs($user)
+        ->from(route('security.edit'))
+        ->delete(route('settings.google.disconnect'));
+
+    $response->assertRedirect(route('security.edit'));
+    expect($user->refresh()->google_id)->toBeNull();
+});

@@ -80,6 +80,14 @@ class User extends Authenticatable implements HasMedia, PasskeyUser
     }
 
     /**
+     * Determine if the user has set a local password.
+     */
+    public function hasPassword(): bool
+    {
+        return ! is_null($this->password);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

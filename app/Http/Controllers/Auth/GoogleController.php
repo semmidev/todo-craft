@@ -7,11 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AvatarService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -51,28 +51,44 @@ class GoogleController extends Controller
         if (Auth::check()) {
             $currentUser = Auth::user();
 
-            if ($currentUser->google_id === $googleUser->getId() || strtolower($currentUser->email) === strtolower($googleUser->getEmail())) {
-                $user = $currentUser;
-
-                $updates = [];
-                if (! $user->google_id) {
-                    $updates['google_id'] = $googleUser->getId();
-                }
-
-                $googleAvatarUrl = $googleUser->getAvatar();
-                if (! $user->avatar && $googleAvatarUrl) {
-                    $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
-                    $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
-                }
-
-                if (! empty($updates)) {
-                    $user->update($updates);
-                }
-            } else {
-                return redirect()->route('password.confirm')->withErrors([
-                    'password' => 'Akun Google ('.$googleUser->getEmail().') tidak cocok dengan akun Anda saat ini.',
+            if (strtolower($currentUser->email) !== strtolower($googleUser->getEmail())) {
+                Inertia::flash('toast', [
+                    'type' => 'error',
+                    'message' => 'Email akun Google ('.$googleUser->getEmail().') harus sama dengan email akun Anda ('.$currentUser->email.').',
                 ]);
+
+                return redirect()->route('security.edit');
             }
+
+            $existingUserWithGoogle = User::where('google_id', $googleUser->getId())
+                ->where('id', '!=', $currentUser->id)
+                ->first();
+
+            if ($existingUserWithGoogle) {
+                Inertia::flash('toast', [
+                    'type' => 'error',
+                    'message' => 'Akun Google ini sudah terhubung dengan pengguna lain.',
+                ]);
+
+                return redirect()->route('security.edit');
+            }
+
+            $updates = ['google_id' => $googleUser->getId()];
+
+            $googleAvatarUrl = $googleUser->getAvatar();
+            if (! $currentUser->avatar && $googleAvatarUrl) {
+                $storedAvatar = $this->avatarService->downloadAndStoreFromUrl($googleAvatarUrl);
+                $updates['avatar'] = $storedAvatar ?? $googleAvatarUrl;
+            }
+
+            $currentUser->update($updates);
+
+            Inertia::flash('toast', [
+                'type' => 'success',
+                'message' => 'Akun Google berhasil dihubungkan.',
+            ]);
+
+            return redirect()->route('security.edit');
         } else {
             $user = User::where('google_id', $googleUser->getId())
                 ->orWhere('email', $googleUser->getEmail())
@@ -104,7 +120,7 @@ class GoogleController extends Controller
                         'google_id' => $googleUser->getId(),
                         'avatar' => $storedAvatar ?? $googleAvatarUrl,
                         'email_verified_at' => now(),
-                        'password' => Hash::make(Str::random(32)),
+                        'password' => null,
                     ]);
 
                     $this->createTeam->handle($newUser, $newUser->name."'s Team", isPersonal: true);
@@ -129,5 +145,31 @@ class GoogleController extends Controller
         }
 
         return redirect()->intended(route('home'));
+    }
+
+    /**
+     * Disconnect Google account from user profile.
+     */
+    public function disconnect(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasPassword()) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Anda harus mengatur kata sandi terlebih dahulu sebelum memutuskan sambungan akun Google.',
+            ]);
+
+            return back();
+        }
+
+        $user->update(['google_id' => null]);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Sambungan akun Google berhasil diputuskan.',
+        ]);
+
+        return back();
     }
 }

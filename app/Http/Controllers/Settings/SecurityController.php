@@ -18,11 +18,16 @@ class SecurityController extends Controller
      */
     public function edit(TwoFactorAuthenticationRequest $request): Response
     {
+        $user = $request->user();
+
         $props = [
+            'hasPassword' => $user->hasPassword(),
+            'isGoogleConnected' => ! is_null($user->google_id),
+            'googleEmail' => $user->google_id ? $user->email : null,
             'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
             'canManagePasskeys' => Features::canManagePasskeys(),
             'passkeys' => Features::canManagePasskeys()
-                ? $request->user()
+                ? $user
                     ->passkeys()
                     ->select(['id', 'name', 'credential', 'created_at', 'last_used_at'])
                     ->latest()
