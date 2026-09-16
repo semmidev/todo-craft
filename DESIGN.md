@@ -40,12 +40,12 @@ Dub's visual system is a quiet, almost editorial SaaS aesthetic — a near-white
 - **Letter spacing:** normal
 - **Role:** Display headings — used only at 36–48px for hero and section titles. Weight 500 (medium, not bold) is the signature: headings feel confident and modern but never shout. Satoshi's geometric proportions give the type a slightly editorial, contemporary feel that Inter body text can't replicate.
 
-### Inter — Body, UI labels, navigation, subheadings, small headings. Inter is the workhorse — handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels. The 16px size at lineHeight 1.5 is the most frequent single step (1220 occurrences), confirming 16px as the canonical body size. · `--font-inter`
-- **Substitute:** Inter (native)
+### Plus Jakarta Sans — Body, UI labels, navigation, subheadings, small headings. Plus Jakarta Sans is the primary workhorse — handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels. The 16px size at lineHeight 1.5 is the canonical body size. · `--font-plus-jakarta-sans`
+- **Substitute:** Plus Jakarta Sans (native)
 - **Weights:** 400, 500, 600
 - **Sizes:** 8px, 10px, 11px, 12px, 13px, 14px, 16px, 18px, 20px, 24px, 30px
 - **Line height:** 1.33–1.56
-- **Role:** Body, UI labels, navigation, subheadings, small headings. Inter is the workhorse — handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels. The 16px size at lineHeight 1.5 is the most frequent single step (1220 occurrences), confirming 16px as the canonical body size.
+- **Role:** Primary font — Body, UI labels, navigation, subheadings, small headings. Plus Jakarta Sans handles everything from 11px micro-labels to 30px secondary headlines. Weight 400 is default body, 500 for emphasis and button labels, 600 reserved for important UI labels.
 
 ### Geist Mono — Code snippets, technical metadata, inline monospace tokens. Used at 12–14px in code blocks and 24px for large code display elements. Provides the developer-tool credibility that matches Dub's product positioning. · `--font-geist-mono`
 - **Substitute:** JetBrains Mono or IBM Plex Mono
@@ -314,7 +314,7 @@ The 9999px radius is deployed 367 times — the second most common radius token.
 
   /* Typography — Font Families */
   --font-satoshi: 'Satoshi', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-geist-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Typography — Scale */
@@ -426,7 +426,7 @@ The 9999px radius is deployed 367 times — the second most common radius token.
 
   /* Typography */
   --font-satoshi: 'Satoshi', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-inter: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-geist-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Typography — Scale */
