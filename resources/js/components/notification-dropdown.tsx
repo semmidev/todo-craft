@@ -1,7 +1,9 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Calendar, Check, CheckCheck, Trash2, UserPlus, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import PendingInvitationsModal from '@/components/pending-invitations-modal';
+import type { DashboardInvitation } from '@/types';
 
 export interface NotificationItem {
     id: string;
@@ -15,6 +17,10 @@ export interface NotificationItem {
 }
 
 export default function NotificationDropdown() {
+    const page = usePage();
+    const pendingInvitations = ((page.props as any).pendingInvitations ?? []) as DashboardInvitation[];
+    const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+
     const [isOpen, setIsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -115,6 +121,39 @@ export default function NotificationDropdown() {
         }
     };
 
+    const handleNotificationClick = (n: NotificationItem) => {
+        if (!n.read_at) {
+            router.patch(
+                `/notifications/${n.id}/read`,
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        setNotifications((prev) =>
+                            prev.map((item) =>
+                                item.id === n.id ? { ...item, read_at: new Date().toISOString() } : item
+                            )
+                        );
+                        setUnreadCount((prev) => Math.max(0, prev - 1));
+                    },
+                }
+            );
+        }
+
+        setIsOpen(false);
+
+        if (n.type === 'team_invitation') {
+            if (pendingInvitations && pendingInvitations.length > 0) {
+                setShowPendingInvitations(true);
+            } else {
+                router.visit('/teams');
+            }
+        } else if (n.action_url) {
+            router.visit(n.action_url);
+        }
+    };
+
     return (
         <div ref={containerRef} className="relative inline-block">
             {/* Bell Trigger Button */}
@@ -184,15 +223,7 @@ export default function NotificationDropdown() {
                                     return (
                                         <div
                                             key={n.id}
-                                            onClick={() => {
-                                                if (isUnread) {
-                                                    router.patch(`/notifications/${n.id}/read`, {}, { preserveState: true });
-                                                }
-                                                if (n.action_url) {
-                                                    setIsOpen(false);
-                                                    router.visit(n.action_url);
-                                                }
-                                            }}
+                                            onClick={() => handleNotificationClick(n)}
                                             className={`flex items-start gap-3 p-3.5 transition-colors cursor-pointer ${
                                                 isUnread
                                                     ? 'bg-primary/5 hover:bg-primary/10'
@@ -247,6 +278,15 @@ export default function NotificationDropdown() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Pending Invitations Modal */}
+            {pendingInvitations.length > 0 && (
+                <PendingInvitationsModal
+                    invitations={pendingInvitations}
+                    open={showPendingInvitations}
+                    onOpenChange={setShowPendingInvitations}
+                />
+            )}
         </div>
     );
 }

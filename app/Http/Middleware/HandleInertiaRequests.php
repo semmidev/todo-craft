@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\TeamInvitation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,6 +47,34 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentTeam' => fn () => $user?->currentTeam ? $user->toUserTeam($user->currentTeam) : null,
             'teams' => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
+            'pendingInvitations' => function () use ($user) {
+                if (! $user) {
+                    return [];
+                }
+
+                return TeamInvitation::query()
+                    ->with(['inviter', 'team'])
+                    ->whereRaw('LOWER(email) = ?', [strtolower($user->email)])
+                    ->whereNull('accepted_at')
+                    ->where(function ($query) {
+                        $query->whereNull('expires_at')
+                            ->orWhere('expires_at', '>=', now());
+                    })
+                    ->latest()
+                    ->get()
+                    ->map(function (TeamInvitation $invitation) {
+                        return [
+                            'code' => $invitation->code,
+                            'inviterName' => $invitation->inviter?->name ?? 'Seseorang',
+                            'team' => [
+                                'name' => $invitation->team?->name ?? 'Tim',
+                                'slug' => $invitation->team?->slug ?? '',
+                            ],
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+            },
             'userPermissions' => fn () => $user && $user->currentTeam ? $user->getPermissionsForTeam($user->currentTeam) : [],
             'flash' => fn () => [
                 'toast' => $request->session()->get('inertia.flash_data.toast') ?? $request->session()->get('toast'),

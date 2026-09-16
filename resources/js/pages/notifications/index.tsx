@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
     Calendar,
@@ -12,8 +12,10 @@ import {
 import { useState } from 'react';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import Heading from '@/components/heading';
+import PendingInvitationsModal from '@/components/pending-invitations-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import type { DashboardInvitation } from '@/types';
 
 interface NotificationItemData {
     id: string;
@@ -45,6 +47,10 @@ export default function NotificationsIndex({
     notifications,
     unreadCount,
 }: PageProps) {
+    const page = usePage();
+    const pendingInvitations = ((page.props as any).pendingInvitations ?? []) as DashboardInvitation[];
+    const [showPendingInvitations, setShowPendingInvitations] = useState(false);
+
     const [filterTab, setFilterTab] = useState<'all' | 'unread'>('all');
 
     const filteredItems = notifications.data.filter((item) => {
@@ -62,6 +68,24 @@ export default function NotificationsIndex({
 
     const handleDelete = (id: string) => {
         router.delete(`/notifications/${id}`, { preserveScroll: true });
+    };
+
+    const handleActionClick = (n: NotificationItemData, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+
+        if (!n.read_at) {
+            handleMarkAsRead(n.id);
+        }
+
+        if (n.type === 'team_invitation') {
+            if (pendingInvitations && pendingInvitations.length > 0) {
+                setShowPendingInvitations(true);
+            } else {
+                router.visit(n.action_url ?? '/teams');
+            }
+        } else if (n.action_url) {
+            router.visit(n.action_url);
+        }
     };
 
     const getIcon = (type: string) => {
@@ -149,7 +173,8 @@ export default function NotificationsIndex({
                                 return (
                                     <div
                                         key={n.id}
-                                        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 transition-colors rounded-xl ${
+                                        onClick={() => handleActionClick(n)}
+                                        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 transition-colors rounded-xl cursor-pointer ${
                                             isUnread
                                                 ? 'bg-primary/5 hover:bg-primary/10'
                                                 : 'hover:bg-muted/50'
@@ -182,18 +207,16 @@ export default function NotificationsIndex({
                                         </div>
 
                                         {/* Actions Cluster */}
-                                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                                            {n.action_url && (
+                                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center" onClick={(e) => e.stopPropagation()}>
+                                            {(n.action_url || n.type === 'team_invitation') && (
                                                 <Button
                                                     size="sm"
                                                     variant="secondary"
-                                                    asChild
+                                                    onClick={(e) => handleActionClick(n, e)}
                                                     className="h-8 text-xs cursor-pointer"
                                                 >
-                                                    <Link href={n.action_url}>
-                                                        Buka
-                                                        <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
-                                                    </Link>
+                                                    {n.type === 'team_invitation' ? 'Lihat Undangan' : 'Buka'}
+                                                    <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                                                 </Button>
                                             )}
 
@@ -201,7 +224,10 @@ export default function NotificationsIndex({
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleMarkAsRead(n.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleMarkAsRead(n.id);
+                                                    }}
                                                     className="h-8 text-xs cursor-pointer"
                                                 >
                                                     Tandai Dibaca
@@ -211,7 +237,10 @@ export default function NotificationsIndex({
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                onClick={() => handleDelete(n.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(n.id);
+                                                }}
                                                 className="h-8 w-8 text-muted-foreground hover:text-destructive cursor-pointer"
                                                 title="Hapus notifikasi"
                                             >
@@ -232,6 +261,15 @@ export default function NotificationsIndex({
                     )}
                 </div>
             </div>
+
+            {/* Pending Invitations Modal */}
+            {pendingInvitations.length > 0 && (
+                <PendingInvitationsModal
+                    invitations={pendingInvitations}
+                    open={showPendingInvitations}
+                    onOpenChange={setShowPendingInvitations}
+                />
+            )}
         </>
     );
 }
