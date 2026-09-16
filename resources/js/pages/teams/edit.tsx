@@ -8,7 +8,7 @@ import {
     Users,
     X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
 import { DataTablePagination } from '@/components/data-table/data-table-pagination';
@@ -160,17 +160,16 @@ export default function TeamEdit({
         });
     };
 
-    const handleSearchSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        updateQuery({ search: searchQuery });
-    };
+    // Debounced search effect (350ms)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery !== (filters?.search ?? '')) {
+                updateQuery({ search: searchQuery });
+            }
+        }, 350);
 
-    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            updateQuery({ search: searchQuery });
-        }
-    };
+        return () => clearTimeout(timer);
+    }, [searchQuery, filters?.search]);
 
     const handleRoleFilterChange = (val: string) => {
         setRoleFilter(val);
@@ -297,16 +296,15 @@ export default function TeamEdit({
 
                     {/* Filter & Search Controls Bar */}
                     <div className="bg-card border-border flex flex-col gap-4 rounded-xl border p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
-                        <form onSubmit={handleSearchSubmit} className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                            {/* Search Input (Press Enter or Click Search icon) */}
+                        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                            {/* Search Input (Debounced Auto-Search) */}
                             <div className="relative min-w-[240px] flex-1 sm:max-w-xs">
                                 <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                                 <Input
                                     type="text"
-                                    placeholder="Cari nama atau email... (Tekan Enter)"
+                                    placeholder="Cari nama atau email..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={handleSearchKeyDown}
                                     className="pl-9 pr-8"
                                 />
                                 {searchQuery && (
@@ -314,7 +312,6 @@ export default function TeamEdit({
                                         type="button"
                                         onClick={() => {
                                             setSearchQuery('');
-                                            updateQuery({ search: '' });
                                         }}
                                         className="text-muted-foreground hover:text-foreground absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer"
                                     >
@@ -345,7 +342,7 @@ export default function TeamEdit({
                                     Reset Filter
                                 </Button>
                             )}
-                        </form>
+                        </div>
 
                         <div className="text-muted-foreground text-xs font-semibold">
                             Total {members.total ?? membersData.length} Anggota
