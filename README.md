@@ -4,19 +4,19 @@ Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur apl
 
 ---
 
-## 📌 Daftar Isi
+## Daftar Isi
 
-- [🛠️ Tech Stack & Dependencies](#️-tech-stack--dependencies)
-- [📋 Prasyarat Sistem](#-prasyarat-sistem)
-- [🐳 Docker & Makefile Workflows](#-docker--makefile-workflows)
-- [⚙️ Setup Environment & Pengoperasian Lokal](#️-setup-environment--pengoperasian-lokal)
-- [⏰ Background Scheduler & Task Runner](#-background-scheduler--task-runner)
-- [🔄 Urutan Eksekusi Request (Request Lifecycle)](#-urutan-eksekusi-request-request-lifecycle)
-- [🔑 Panduan Manajemen Permission (Menambah & Synchronize Permission)](#-panduan-manajemen-permission-menambah--synchronize-permission)
+- [Tech Stack & Dependencies](#tech-stack--dependencies)
+- [Prasyarat Sistem](#prasyarat-sistem)
+- [Docker & Makefile Workflows](#docker--makefile-workflows)
+- [Setup Environment & Pengoperasian Lokal](#setup-environment--pengoperasian-lokal)
+- [Background Scheduler & Task Runner](#background-scheduler--task-runner)
+- [Urutan Eksekusi Request (Request Lifecycle)](#urutan-eksekusi-request-request-lifecycle)
+- [Panduan Manajemen Permission (Menambah & Synchronize Permission)](#panduan-manajemen-permission-menambah--synchronize-permission)
   - [1. Tempat Mendefinisikan Permission Baru](#1-tempat-mendefinisikan-permission-baru)
   - [2. Sinkronisasi Permission ke Database Tanpa Menghapus Data Lama](#2-sinkronisasi-permission-ke-database-tanpa-menghapus-data-lama)
   - [3. Penambahan Permission ke Tim yang Sudah Ada (Existing Teams)](#3-penambahan-permission-ke-tim-yang-sudah-ada-existing-teams)
-- [🚀 Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)](#-panduan-pengembangan-fitur-baru-step-by-step-developer-guide)
+- [Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)](#panduan-pengembangan-fitur-baru-step-by-step-developer-guide)
   - [Langkah 1: Database Migration](#langkah-1-database-migration)
   - [Langkah 2: Model Eloquent, Enum, Casts & Relasi](#langkah-2-model-eloquent-enum-casts--relasi)
   - [Langkah 3: Factory & Database Seeder](#langkah-3-factory--database-seeder)
@@ -27,7 +27,7 @@ Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur apl
   - [Langkah 8: Tipe TypeScript, Halaman React & Komponen UI](#langkah-8-tipe-typescript-halaman-react--komponen-ui)
   - [Langkah 9: Automated Testing dengan Pest PHP](#langkah-9-automated-testing-dengan-pest-php)
   - [Langkah 10: Formatting & Verifikasi Akhir](#langkah-10-formatting--verifikasi-akhir)
-- [📚 Panduan Komponen Arsitektur & Packages](#-panduan-komponen-arsitektur--packages)
+- [Panduan Komponen Arsitektur & Packages](#panduan-komponen-arsitektur--packages)
   - [1. Service Provider](#1-service-provider)
   - [2. Routing & Route Model Binding](#2-routing--route-model-binding)
   - [3. Middleware Stack](#3-middleware-stack)
@@ -40,12 +40,12 @@ Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur apl
   - [10. Spatie QueryBuilder (Filter & Sort Otomatis)](#10-spatie-querybuilder-filter--sort-otomatis)
   - [11. Wayfinder (Type-safe Routes di Frontend)](#11-wayfinder-type-safe-routes-di-frontend)
   - [12. Fitur PHP 8.x Modern](#12-fitur-php-8x-modern)
-- [🧪 Perintah Testing, Linting & Debugging](#-perintah-testing-linting--debugging)
-- [📁 Struktur Arsitektur Project](#-struktur-arsitektur-project)
+- [Perintah Testing, Linting & Debugging](#perintah-testing-linting--debugging)
+- [Struktur Arsitektur Project](#struktur-arsitektur-project)
 
 ---
 
-## 🛠️ Tech Stack & Dependencies
+## Tech Stack & Dependencies
 
 - **Backend**: PHP 8.4, Laravel 11 / 13, Laravel Fortify, Laravel Socialite, Laravel Passkeys
 - **Frontend**: React 19, Inertia.js v3, TypeScript, Tailwind CSS v4, Radix UI, Framer Motion, Lucide Icons
@@ -55,7 +55,7 @@ Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur apl
 
 ---
 
-## 📋 Prasyarat Sistem
+## Prasyarat Sistem
 
 - **PHP** `>= 8.3` (ekstensi: `pdo`, `mbstring`, `openssl`, `bcmath`, `curl`)
 - **Composer** `>= 2.6`
@@ -65,7 +65,7 @@ Dokumentasi teknis lengkap, pengoperasian, alur eksekusi request, arsitektur apl
 
 ---
 
-## 🐳 Docker & Makefile Workflows
+## Docker & Makefile Workflows
 
 Jika menggunakan Docker / Podman untuk mengelola layanan infrastruktur pendukung (MySQL, Redis, Mailpit, RustFS/S3):
 
@@ -96,7 +96,7 @@ docker compose -f compose.dev.yml down
 
 ---
 
-## ⚙️ Setup Environment & Pengoperasian Lokal
+## Setup Environment & Pengoperasian Lokal
 
 ### 1. Instalasi Dependensi
 ```bash
@@ -142,7 +142,7 @@ Aplikasi berjalan di: `http://localhost:8000`.
 
 ---
 
-## ⏰ Background Scheduler & Task Runner
+## Background Scheduler & Task Runner
 
 Perintah `make dev` / `make run` secara otomatis sudah menjalankan `php artisan schedule:work` secara paralel. Namun Anda juga dapat menjalankannya secara terpisah jika diperlukan:
 
@@ -159,7 +159,7 @@ php artisan schedule:work
 
 ---
 
-## 🔄 Urutan Eksekusi Request (Request Lifecycle)
+## Urutan Eksekusi Request (Request Lifecycle)
 
 Setiap request HTTP dari browser melewati tahapan eksekusi terstruktur berikut:
 
@@ -202,7 +202,7 @@ Browser kirim request
 
 ---
 
-## 🔑 Panduan Manajemen Permission (Menambah & Synchronize Permission)
+## Panduan Manajemen Permission (Menambah & Synchronize Permission)
 
 Seluruh otorisasi di proyek ini berbasis **permission string dengan format dot notation (`resource.action`)** dan ter-scope per tim via Spatie Permission.
 
@@ -286,7 +286,7 @@ Team::all()->each(function (Team $team) {
 
 ---
 
-## 🚀 Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)
+## Panduan Pengembangan Fitur Baru (Step-by-Step Developer Guide)
 
 ```mermaid
 flowchart TD
@@ -339,7 +339,7 @@ php artisan make:seeder ProjectSeeder
 ---
 
 ### Langkah 4: Permission & Authorization Policy
-1. Ikuti [Panduan Manajemen Permission](#-panduan-manajemen-permission-menambah--synchronize-permission) di atas untuk menambahkan permission baru.
+1. Ikuti [Panduan Manajemen Permission](#panduan-manajemen-permission-menambah--synchronize-permission) di atas untuk menambahkan permission baru.
 2. Buat Policy di `app/Policies/`:
 ```bash
 php artisan make:policy ProjectPolicy --model=Project
@@ -455,7 +455,7 @@ make test
 
 ---
 
-## 📚 Panduan Komponen Arsitektur & Packages
+## Panduan Komponen Arsitektur & Packages
 
 ### 1. Service Provider
 - `AppServiceProvider` mendaftarkan konfigurasi default aplikasi, pengaman perintah destruktif di produksi (`DB::prohibitDestructiveCommands()`), serta memastikan bucket storage S3/RustFS lokal siap digunakan.
@@ -528,7 +528,7 @@ make test
 
 ---
 
-## 🧪 Perintah Testing, Linting & Debugging
+## Perintah Testing, Linting & Debugging
 
 ### Automated Testing (Pest):
 ```bash
@@ -566,7 +566,7 @@ php artisan tinker
 
 ---
 
-## 📁 Struktur Arsitektur Project
+## Struktur Arsitektur Project
 
 ```text
 todo-craft/
