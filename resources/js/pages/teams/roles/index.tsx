@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import ConfirmDialog from '@/components/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { usePermission } from '@/hooks/use-permission';
 
 interface RoleData {
     id: number;
@@ -66,6 +67,7 @@ const PERMISSION_GROUPS: Record<
 };
 
 export default function TeamRolesIndex({ team, roles }: PageProps) {
+    const { can } = usePermission();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<RoleData | null>(null);
     const [deletingRoleTarget, setDeletingRoleTarget] = useState<RoleData | null>(null);
@@ -162,13 +164,15 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                     title="Peran & Izin Tim"
                     description={`Konfigurasi izin dinamis dan kontrol akses untuk anggota di ${team.name}.`}
                 >
-                    <button
-                        onClick={openCreateModal}
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#121212] px-4 py-2.5 text-sm font-medium text-[#f8f8f6] shadow-sm transition-colors hover:bg-[#373734] active:scale-95 dark:bg-[#f8f8f6] dark:text-[#121212] dark:hover:bg-[#efeeeb]"
-                    >
-                        <Plus className="size-4" />
-                        Buat Peran Khusus
-                    </button>
+                    {can('roles.manage') && (
+                        <button
+                            onClick={openCreateModal}
+                            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#121212] px-4 py-2.5 text-sm font-medium text-[#f8f8f6] shadow-sm transition-colors hover:bg-[#373734] active:scale-95 dark:bg-[#f8f8f6] dark:text-[#121212] dark:hover:bg-[#efeeeb]"
+                        >
+                            <Plus className="size-4" />
+                            Buat Peran Khusus
+                        </button>
+                    )}
                 </Heading>
 
                 {/* Roles Cards Grid */}
@@ -222,29 +226,31 @@ export default function TeamRolesIndex({ team, roles }: PageProps) {
                             </div>
 
                             {/* Card Footer Actions */}
-                            <div className="mt-6 flex items-center justify-end gap-2 border-t border-[#e7e6e1] pt-4 dark:border-[#2f2f2c]">
-                                <button
-                                    onClick={() => openEditModal(role)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#e7e6e1] bg-[#f8f8f6] px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#efeeeb] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#f8f8f6] dark:hover:bg-[#373734]"
-                                >
-                                    <Edit3 className="size-3.5" />
-                                    Edit Izin
-                                </button>
-                                {!role.is_default && (
+                            {can('roles.manage') && (
+                                <div className="mt-6 flex items-center justify-end gap-2 border-t border-[#e7e6e1] pt-4 dark:border-[#2f2f2c]">
                                     <button
-                                        onClick={() => setDeletingRoleTarget(role)}
-                                        disabled={deletingId === role.id}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#d97757]/30 bg-[#d97757]/10 px-3 py-1.5 text-xs font-medium text-[#d97757] transition-colors hover:bg-[#d97757]/20 disabled:opacity-50 cursor-pointer"
+                                        onClick={() => openEditModal(role)}
+                                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#e7e6e1] bg-[#f8f8f6] px-3 py-1.5 text-xs font-medium text-[#121212] transition-colors hover:bg-[#efeeeb] dark:border-[#2f2f2c] dark:bg-[#282826] dark:text-[#f8f8f6] dark:hover:bg-[#373734]"
                                     >
-                                        {deletingId === role.id ? (
-                                            <Loader2 className="size-3.5 animate-spin" />
-                                        ) : (
-                                            <Trash2 className="size-3.5" />
-                                        )}
-                                        Hapus
+                                        <Edit3 className="size-3.5" />
+                                        Edit Izin
                                     </button>
-                                )}
-                            </div>
+                                    {!role.is_default && (
+                                        <button
+                                            onClick={() => setDeletingRoleTarget(role)}
+                                            disabled={deletingId === role.id}
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#d97757]/30 bg-[#d97757]/10 px-3 py-1.5 text-xs font-medium text-[#d97757] transition-colors hover:bg-[#d97757]/20 disabled:opacity-50 cursor-pointer"
+                                        >
+                                            {deletingId === role.id ? (
+                                                <Loader2 className="size-3.5 animate-spin" />
+                                            ) : (
+                                                <Trash2 className="size-3.5" />
+                                            )}
+                                            Hapus
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

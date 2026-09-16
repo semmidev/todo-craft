@@ -14,6 +14,7 @@ import {
 import { FormEvent, useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { usePermission } from '@/hooks/use-permission';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import { formatUserDateTime } from '@/lib/date-utils';
 
@@ -86,6 +87,7 @@ interface PageProps {
 
 export default function TodoShow(props: PageProps) {
     const page = usePage<any>();
+    const { can } = usePermission();
     const currentTeam = props.currentTeam || page.props.currentTeam;
     const todo = props.todo || page.props.todo;
 
@@ -99,6 +101,7 @@ export default function TodoShow(props: PageProps) {
     const [files, setFiles] = useState<File[]>([]);
 
     const handleToggleItem = (itemId: number) => {
+        if (!can('todos.update')) return;
         router.patch(
             `/${teamSlug}/todos/${todoId}/items/${itemId}/toggle`,
             {},
@@ -244,12 +247,14 @@ export default function TodoShow(props: PageProps) {
                                     File Attachments (
                                     {todo.attachments?.length || 0})
                                 </h3>
-                                <button
-                                    onClick={() => setIsUploading(!isUploading)}
-                                    className="text-primary text-xs font-semibold hover:underline"
-                                >
-                                    {isUploading ? 'Cancel' : '+ Add Files'}
-                                </button>
+                                {can('todos.update') && (
+                                    <button
+                                        onClick={() => setIsUploading(!isUploading)}
+                                        className="text-primary text-xs font-semibold hover:underline"
+                                    >
+                                        {isUploading ? 'Cancel' : '+ Add Files'}
+                                    </button>
+                                )}
                             </div>
 
                             {isUploading && (

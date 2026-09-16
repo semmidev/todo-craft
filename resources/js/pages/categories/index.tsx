@@ -7,6 +7,7 @@ import Modal from '@/components/modal';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
+import { usePermission } from '@/hooks/use-permission';
 
 interface Category {
     id: number;
@@ -30,6 +31,7 @@ export default function CategoriesIndex({
     categories,
     currentTeam,
 }: PageProps) {
+    const { can } = usePermission();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -41,7 +43,9 @@ export default function CategoriesIndex({
     });
 
     useKeyboardShortcut('c', () => {
-        setIsCreateModalOpen(true);
+        if (can('categories.manage')) {
+            setIsCreateModalOpen(true);
+        }
     });
 
     const handleCreateSubmit = (e: FormEvent) => {
@@ -86,15 +90,17 @@ export default function CategoriesIndex({
                     title="Kategori Todo"
                     description={`Kelompokkan dan atur tugas tim Anda ke dalam kategori visual untuk ${currentTeam.name}.`}
                 >
-                    <Button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="cursor-pointer gap-2 font-medium"
-                    >
-                        <span>Buat Kategori</span>
-                        <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
-                            C
-                        </Kbd>
-                    </Button>
+                    {can('categories.manage') && (
+                        <Button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="cursor-pointer gap-2 font-medium"
+                        >
+                            <span>Buat Kategori</span>
+                            <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
+                                C
+                            </Kbd>
+                        </Button>
+                    )}
                 </Heading>
 
                 {categories.length === 0 ? (
@@ -131,17 +137,19 @@ export default function CategoriesIndex({
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={() => setDeletingCategory(cat)}
-                                    disabled={deletingId === cat.id}
-                                    className="text-muted-foreground hover:text-destructive rounded-lg p-2 transition group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
-                                >
-                                    {deletingId === cat.id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Trash2 className="h-4 w-4" />
-                                    )}
-                                </button>
+                                {can('categories.manage') && (
+                                    <button
+                                        onClick={() => setDeletingCategory(cat)}
+                                        disabled={deletingId === cat.id}
+                                        className="text-muted-foreground hover:text-destructive rounded-lg p-2 transition group-hover:opacity-100 disabled:opacity-50 cursor-pointer"
+                                    >
+                                        {deletingId === cat.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>

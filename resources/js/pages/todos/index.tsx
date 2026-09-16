@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut';
+import { usePermission } from '@/hooks/use-permission';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
 import {
     DropdownMenu,
@@ -145,6 +146,8 @@ export default function TodosIndex({
     sort,
     currentTeam,
 }: PageProps) {
+    const { can } = usePermission();
+
     const [searchQuery, setSearchQuery] = useState(filters['search'] || '');
     const [statusFilter, setStatusFilter] = useState(filters['status'] || '');
     const [priorityFilter, setPriorityFilter] = useState(
@@ -445,15 +448,17 @@ const REMINDER_OPTIONS = [
                     title="Daftar Tugas Tim"
                     description={`Kelola tugas, atur penanggung jawab, filter dinamis, dan atur alur kerja untuk tim ${currentTeam.name}.`}
                 >
-                    <Button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="cursor-pointer font-medium gap-2"
-                    >
-                        <span>Tambah Tugas Baru</span>
-                        <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
-                            C
-                        </Kbd>
-                    </Button>
+                    {can('todos.create') && (
+                        <Button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="cursor-pointer font-medium gap-2"
+                        >
+                            <span>Tambah Tugas Baru</span>
+                            <Kbd className="border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground ml-1">
+                                C
+                            </Kbd>
+                        </Button>
+                    )}
                 </Heading>
 
                 {/* Stats Cards */}
@@ -713,17 +718,27 @@ const REMINDER_OPTIONS = [
                                             {/* Task Title & Meta */}
                                             <TableCell className="font-medium">
                                                 <div className="flex items-start gap-3">
-                                                    <button
-                                                        onClick={() => handleToggleStatus(todo.id)}
-                                                        className="mt-0.5 shrink-0 text-muted-foreground transition hover:text-emerald-600 cursor-pointer"
-                                                        title="Ubah status penyelesaian"
-                                                    >
-                                                        {todo.status === 'completed' ? (
-                                                            <CheckCircle2 className="h-5 w-5 fill-emerald-500/20 text-emerald-500" />
-                                                        ) : (
-                                                            <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40 transition hover:border-emerald-500" />
-                                                        )}
-                                                    </button>
+                                                    {can('todos.update') ? (
+                                                        <button
+                                                            onClick={() => handleToggleStatus(todo.id)}
+                                                            className="mt-0.5 shrink-0 text-muted-foreground transition hover:text-emerald-600 cursor-pointer"
+                                                            title="Ubah status penyelesaian"
+                                                        >
+                                                            {todo.status === 'completed' ? (
+                                                                <CheckCircle2 className="h-5 w-5 fill-emerald-500/20 text-emerald-500" />
+                                                            ) : (
+                                                                <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40 transition hover:border-emerald-500" />
+                                                            )}
+                                                        </button>
+                                                    ) : (
+                                                        <div className="mt-0.5 shrink-0 text-muted-foreground">
+                                                            {todo.status === 'completed' ? (
+                                                                <CheckCircle2 className="h-5 w-5 fill-emerald-500/20 text-emerald-500" />
+                                                            ) : (
+                                                                <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
+                                                            )}
+                                                        </div>
+                                                    )}
                                                     <div className="space-y-1">
                                                         <Link
                                                             href={`/${currentTeam.slug}/todos/${todo.id}`}
@@ -831,37 +846,47 @@ const REMINDER_OPTIONS = [
                                                     <DropdownMenuContent align="end" className="w-48">
                                                         <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem asChild>
-                                                            <Link
-                                                                href={`/${currentTeam.slug}/todos/${todo.id}`}
-                                                                className="cursor-pointer"
-                                                            >
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                Lihat Detail
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() => openEditModal(todo)}
-                                                            className="cursor-pointer"
-                                                        >
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit Tugas
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() => handleToggleStatus(todo.id)}
-                                                            className="cursor-pointer"
-                                                        >
-                                                            <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                            Ubah Status
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            onClick={() => setDeletingTodoTarget(todo)}
-                                                            className="text-destructive focus:text-destructive cursor-pointer font-medium"
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Hapus Tugas
-                                                        </DropdownMenuItem>
+                                                        {can('todos.view') && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link
+                                                                    href={`/${currentTeam.slug}/todos/${todo.id}`}
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    Lihat Detail
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {can('todos.update') && (
+                                                            <>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => openEditModal(todo)}
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                                    Edit Tugas
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem
+                                                                    onClick={() => handleToggleStatus(todo.id)}
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                                    Ubah Status
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
+                                                        {can('todos.delete') && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setDeletingTodoTarget(todo)}
+                                                                    className="text-destructive focus:text-destructive cursor-pointer font-medium"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Hapus Tugas
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
