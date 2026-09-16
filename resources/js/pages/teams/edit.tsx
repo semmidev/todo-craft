@@ -1,10 +1,6 @@
 import { Form, Head, router } from '@inertiajs/react';
 import {
     ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsLeft,
-    ChevronsRight,
     Mail,
     RefreshCw,
     Search,
@@ -15,6 +11,7 @@ import {
 import { useMemo, useState } from 'react';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
 import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { DataTablePagination } from '@/components/data-table/data-table-pagination';
 import DeleteTeamModal from '@/components/delete-team-modal';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
@@ -59,10 +56,24 @@ import type {
 
 type Props = {
     team: Team;
-    members: TeamMember[];
+    members: {
+        data: TeamMember[];
+        links?: any[];
+        current_page?: number;
+        from?: number | null;
+        to?: number | null;
+        total?: number;
+        last_page?: number;
+        per_page?: number;
+    };
     invitations: TeamInvitation[];
     permissions: TeamPermissions;
     availableRoles: RoleOption[];
+    filters?: {
+        search?: string;
+        role?: string;
+    };
+    sort?: string;
 };
 
 export default function TeamEdit({
@@ -71,6 +82,8 @@ export default function TeamEdit({
     invitations,
     permissions,
     availableRoles,
+    filters,
+    sort,
 }: Props) {
     const getInitials = useInitials();
 
@@ -81,13 +94,9 @@ export default function TeamEdit({
     const [cancelInvitationDialogOpen, setCancelInvitationDialogOpen] = useState(false);
     const [invitationToCancel, setInvitationToCancel] = useState<TeamInvitation | null>(null);
 
-    // DataTable state
-    const [searchQuery, setSearchQuery] = useState('');
-    const [roleFilter, setRoleFilter] = useState('all');
-    const [sortColumn, setSortColumn] = useState<'name' | 'email' | 'role'>('name');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    // Search and filter state (reflecting server props)
+    const [searchQuery, setSearchQuery] = useState(filters?.search ?? '');
+    const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'all');
 
     const pageTitle = useMemo(
         () =>
@@ -114,60 +123,79 @@ export default function TeamEdit({
         setCancelInvitationDialogOpen(true);
     };
 
-    // Client-side filtering
-    const filteredMembers = useMemo(() => {
-        return members.filter((m) => {
-            const matchesSearch =
-                searchQuery.trim() === '' ||
-                m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.email.toLowerCase().includes(searchQuery.toLowerCase());
+    // Trigger server-side DB query update via Inertia router.get
+    const updateQuery = (
+        newFilters: { search?: string; role?: string },
+        newSort?: string,
+        newPerPage?: number
+    ) => {
+        const queryParams: Record<string, string> = {};
 
-            const matchesRole = roleFilter === 'all' || m.role === roleFilter;
+        const searchVal = newFilters.search !== undefined ? newFilters.search : searchQuery;
+        const roleVal = newFilters.role !== undefined ? newFilters.role : roleFilter;
+        const sortVal = newSort !== undefined ? newSort : sort;
 
-            return matchesSearch && matchesRole;
+        if (searchVal && searchVal.trim() !== '') {
+            queryParams['filter[search]'] = searchVal.trim();
+        }
+
+        if (roleVal && roleVal !== 'all') {
+            queryParams['filter[role]'] = roleVal;
+        }
+
+        if (sortVal) {
+            queryParams['sort'] = sortVal;
+        }
+
+        if (newPerPage) {
+            queryParams['per_page'] = String(newPerPage);
+        } else if (members.per_page) {
+            queryParams['per_page'] = String(members.per_page);
+        }
+
+        router.get(edit(team.slug), queryParams, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
         });
-    }, [members, searchQuery, roleFilter]);
+    };
 
-    // Client-side sorting
-    const sortedMembers = useMemo(() => {
-        return [...filteredMembers].sort((a, b) => {
-            let valA = a[sortColumn] || '';
-            let valB = b[sortColumn] || '';
-            if (typeof valA === 'string') valA = valA.toLowerCase();
-            if (typeof valB === 'string') valB = valB.toLowerCase();
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateQuery({ search: searchQuery });
+    };
 
-            if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-            if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }, [filteredMembers, sortColumn, sortDirection]);
+    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            updateQuery({ search: searchQuery });
+        }
+    };
 
-    // Client-side pagination
-    const totalItems = sortedMembers.length;
-    const totalPages = Math.ceil(totalItems / pageSize) || 1;
-    const currentFrom = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-    const currentTo = Math.min(currentPage * pageSize, totalItems);
-
-    const paginatedMembers = useMemo(() => {
-        const start = (currentPage - 1) * pageSize;
-        return sortedMembers.slice(start, start + pageSize);
-    }, [sortedMembers, currentPage, pageSize]);
+    const handleRoleFilterChange = (val: string) => {
+        setRoleFilter(val);
+        updateQuery({ role: val });
+    };
 
     const handleSort = (key: string) => {
-        const col = key as 'name' | 'email' | 'role';
-        if (sortColumn === col) {
-            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortColumn(col);
-            setSortDirection('asc');
+        let newSort = key;
+        if (sort === key) {
+            newSort = `-${key}`;
+        } else if (sort === `-${key}`) {
+            newSort = '';
         }
-        setCurrentPage(1);
+
+        updateQuery({}, newSort);
+    };
+
+    const handlePerPageChange = (newPerPage: number) => {
+        updateQuery({}, undefined, newPerPage);
     };
 
     const resetFilters = () => {
         setSearchQuery('');
         setRoleFilter('all');
-        setCurrentPage(1);
+        router.get(edit(team.slug), {}, { preserveState: true, replace: true });
     };
 
     const roleOptionsForFilter = useMemo(() => {
@@ -177,6 +205,14 @@ export default function TeamEdit({
             ...availableRoles.map((r) => ({ value: r.value, label: r.label })),
         ];
     }, [availableRoles]);
+
+    const hasActiveFilters = Boolean(
+        (searchQuery && searchQuery.trim() !== '') || (roleFilter && roleFilter !== 'all')
+    );
+
+    const membersData = members.data ?? [];
+    const currentPage = members.current_page ?? 1;
+    const perPage = members.per_page ?? 10;
 
     return (
         <>
@@ -235,7 +271,7 @@ export default function TeamEdit({
                     )}
                 </div>
 
-                {/* Team Members Comprehensive DataTable Section */}
+                {/* Team Members Database-Driven DataTable Section */}
                 <div className="space-y-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <Heading
@@ -259,26 +295,27 @@ export default function TeamEdit({
                         ) : null}
                     </div>
 
-                    {/* Filter and Search Toolbar */}
+                    {/* Filter & Search Controls Bar */}
                     <div className="bg-card border-border flex flex-col gap-4 rounded-xl border p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-                            {/* Search Input */}
+                        <form onSubmit={handleSearchSubmit} className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+                            {/* Search Input (Press Enter or Click Search icon) */}
                             <div className="relative min-w-[240px] flex-1 sm:max-w-xs">
                                 <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                                 <Input
                                     type="text"
-                                    placeholder="Cari nama atau email..."
+                                    placeholder="Cari nama atau email... (Tekan Enter)"
                                     value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleSearchKeyDown}
                                     className="pl-9 pr-8"
                                 />
                                 {searchQuery && (
                                     <button
                                         type="button"
-                                        onClick={() => setSearchQuery('')}
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            updateQuery({ search: '' });
+                                        }}
                                         className="text-muted-foreground hover:text-foreground absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer"
                                     >
                                         <X className="h-4 w-4" />
@@ -290,17 +327,15 @@ export default function TeamEdit({
                             <div className="w-full sm:w-48">
                                 <SearchableSelect
                                     value={roleFilter}
-                                    onChange={(val) => {
-                                        setRoleFilter(String(val));
-                                        setCurrentPage(1);
-                                    }}
+                                    onChange={(val) => handleRoleFilterChange(String(val))}
                                     options={roleOptionsForFilter}
                                     placeholder="Filter Peran"
                                 />
                             </div>
 
-                            {(searchQuery || roleFilter !== 'all') && (
+                            {hasActiveFilters && (
                                 <Button
+                                    type="button"
                                     variant="ghost"
                                     size="sm"
                                     onClick={resetFilters}
@@ -310,14 +345,14 @@ export default function TeamEdit({
                                     Reset Filter
                                 </Button>
                             )}
-                        </div>
+                        </form>
 
                         <div className="text-muted-foreground text-xs font-semibold">
-                            Total {filteredMembers.length} Anggota
+                            Total {members.total ?? membersData.length} Anggota
                         </div>
                     </div>
 
-                    {/* Comprehensive DataTable */}
+                    {/* Comprehensive DB Table */}
                     <div className="bg-card border-border overflow-hidden rounded-xl border shadow-xs">
                         <Table>
                             <TableHeader className="bg-muted/40">
@@ -327,13 +362,7 @@ export default function TeamEdit({
                                         <DataTableColumnHeader
                                             title="Anggota"
                                             sortKey="name"
-                                            currentSort={
-                                                sortColumn === 'name'
-                                                    ? sortDirection === 'asc'
-                                                        ? 'name'
-                                                        : '-name'
-                                                    : undefined
-                                            }
+                                            currentSort={sort}
                                             onSort={handleSort}
                                         />
                                     </TableHead>
@@ -341,13 +370,7 @@ export default function TeamEdit({
                                         <DataTableColumnHeader
                                             title="Email"
                                             sortKey="email"
-                                            currentSort={
-                                                sortColumn === 'email'
-                                                    ? sortDirection === 'asc'
-                                                        ? 'email'
-                                                        : '-email'
-                                                    : undefined
-                                            }
+                                            currentSort={sort}
                                             onSort={handleSort}
                                         />
                                     </TableHead>
@@ -355,13 +378,7 @@ export default function TeamEdit({
                                         <DataTableColumnHeader
                                             title="Peran / Akses"
                                             sortKey="role"
-                                            currentSort={
-                                                sortColumn === 'role'
-                                                    ? sortDirection === 'asc'
-                                                        ? 'role'
-                                                        : '-role'
-                                                    : undefined
-                                            }
+                                            currentSort={sort}
                                             onSort={handleSort}
                                         />
                                     </TableHead>
@@ -372,7 +389,7 @@ export default function TeamEdit({
                             </TableHeader>
 
                             <TableBody>
-                                {paginatedMembers.length === 0 ? (
+                                {membersData.length === 0 ? (
                                     <TableRow>
                                         <TableCell
                                             colSpan={5}
@@ -383,7 +400,7 @@ export default function TeamEdit({
                                                 <p className="text-sm font-semibold">
                                                     Tidak ada anggota tim yang cocok
                                                 </p>
-                                                {(searchQuery || roleFilter !== 'all') && (
+                                                {hasActiveFilters && (
                                                     <Button
                                                         variant="link"
                                                         size="sm"
@@ -397,7 +414,7 @@ export default function TeamEdit({
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    paginatedMembers.map((member, index) => (
+                                    membersData.map((member, index) => (
                                         <TableRow
                                             key={member.id}
                                             data-test="member-row"
@@ -405,7 +422,7 @@ export default function TeamEdit({
                                         >
                                             {/* Index */}
                                             <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                                                {(currentPage - 1) * pageSize + index + 1}
+                                                {(currentPage - 1) * perPage + index + 1}
                                             </TableCell>
 
                                             {/* Member Name + Avatar */}
@@ -512,90 +529,12 @@ export default function TeamEdit({
                         </Table>
 
                         {/* Pagination Footer */}
-                        {totalItems > 0 && (
-                            <div className="flex flex-col items-center justify-between gap-4 border-t border-border px-4 py-3 sm:flex-row">
-                                <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-xs">
-                                    <div>
-                                        Menampilkan{' '}
-                                        <span className="font-semibold text-foreground">
-                                            {currentFrom}
-                                        </span>{' '}
-                                        sampai{' '}
-                                        <span className="font-semibold text-foreground">
-                                            {currentTo}
-                                        </span>{' '}
-                                        dari{' '}
-                                        <span className="font-semibold text-foreground">
-                                            {totalItems}
-                                        </span>{' '}
-                                        anggota
-                                    </div>
-
-                                    <div className="flex items-center space-x-2">
-                                        <span>Baris per halaman:</span>
-                                        <SearchableSelect
-                                            value={pageSize}
-                                            onChange={(val) => {
-                                                setPageSize(Number(val));
-                                                setCurrentPage(1);
-                                            }}
-                                            options={[
-                                                { value: '5', label: '5' },
-                                                { value: '10', label: '10' },
-                                                { value: '25', label: '25' },
-                                                { value: '50', label: '50' },
-                                            ]}
-                                            size="sm"
-                                            className="w-18"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        disabled={currentPage <= 1}
-                                        onClick={() => setCurrentPage(1)}
-                                        className="h-8 w-8 cursor-pointer disabled:opacity-40"
-                                    >
-                                        <ChevronsLeft className="h-4 w-4" />
-                                    </Button>
-
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        disabled={currentPage <= 1}
-                                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                        className="h-8 w-8 cursor-pointer disabled:opacity-40"
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Button>
-
-                                    <span className="text-xs font-semibold px-2">
-                                        Halaman {currentPage} dari {totalPages}
-                                    </span>
-
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        disabled={currentPage >= totalPages}
-                                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                        className="h-8 w-8 cursor-pointer disabled:opacity-40"
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        disabled={currentPage >= totalPages}
-                                        onClick={() => setCurrentPage(totalPages)}
-                                        className="h-8 w-8 cursor-pointer disabled:opacity-40"
-                                    >
-                                        <ChevronsRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                        {members.total && members.total > 0 && (
+                            <div className="border-t border-border">
+                                <DataTablePagination
+                                    data={members}
+                                    onPerPageChange={handlePerPageChange}
+                                />
                             </div>
                         )}
                     </div>

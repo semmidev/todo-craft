@@ -65,6 +65,52 @@ class TeamController extends Controller
             $availableRoles = TeamRole::assignable();
         }
 
+        $search = $request->input('filter.search', $request->input('search'));
+        $role = $request->input('filter.role', $request->input('role'));
+        $sort = $request->input('sort', 'name');
+        $perPage = min(max((int) $request->input('per_page', 10), 5), 100);
+
+        $membersQuery = $team->members();
+
+        if (! empty($search)) {
+            $membersQuery->where(function ($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($role) && $role !== 'all') {
+            $membersQuery->wherePivot('role', $role);
+        }
+
+        $isDescending = str_starts_with($sort, '-');
+        $sortColumn = ltrim($sort, '-');
+
+        if ($sortColumn === 'email') {
+            $membersQuery->orderBy('users.email', $isDescending ? 'desc' : 'asc');
+        } elseif ($sortColumn === 'role') {
+            $membersQuery->orderBy('memberships.role', $isDescending ? 'desc' : 'asc');
+        } else {
+            $membersQuery->orderBy('users.name', $isDescending ? 'desc' : 'asc');
+        }
+
+        $membersPaginator = $membersQuery->paginate($perPage)->withQueryString();
+
+        $members = $membersPaginator->through(function (User $member) {
+            /** @var Membership $membership */
+            $membership = $member->getRelation('pivot');
+            $roleValue = is_string($membership->role) ? $membership->role : ($membership->role?->value ?? 'member');
+
+            return [
+                'id' => $member->id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'avatar' => $member->avatar ?? null,
+                'role' => $roleValue,
+                'role_label' => TeamRole::tryFrom($roleValue)?->label() ?? ucfirst($roleValue),
+            ];
+        });
+
         return Inertia::render('teams/edit', [
             'team' => [
                 'id' => $team->id,
@@ -72,20 +118,7 @@ class TeamController extends Controller
                 'slug' => $team->slug,
                 'isPersonal' => $team->is_personal,
             ],
-            'members' => $team->members()->get()->map(function (User $member) {
-                /** @var Membership $membership */
-                $membership = $member->getRelation('pivot');
-                $roleValue = is_string($membership->role) ? $membership->role : ($membership->role?->value ?? 'member');
-
-                return [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'avatar' => $member->avatar ?? null,
-                    'role' => $roleValue,
-                    'role_label' => TeamRole::tryFrom($roleValue)?->label() ?? ucfirst($roleValue),
-                ];
-            }),
+            'members' => $members,
             'invitations' => $team->invitations()
                 ->whereNull('accepted_at')
                 ->get()
@@ -102,6 +135,11 @@ class TeamController extends Controller
                 }),
             'permissions' => $user->toTeamPermissions($team),
             'availableRoles' => $availableRoles,
+            'filters' => [
+                'search' => $search ?? '',
+                'role' => $role ?? 'all',
+            ],
+            'sort' => $sort,
         ]);
     }
 

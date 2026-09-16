@@ -82,8 +82,8 @@ test('the team edit page can be rendered', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('teams/edit')
-            ->where('members.0.role', TeamRole::Owner->value)
-            ->where('members.0.role_label', TeamRole::Owner->label()),
+            ->where('members.data.0.role', TeamRole::Owner->value)
+            ->where('members.data.0.role_label', TeamRole::Owner->label()),
         );
 });
 
@@ -409,4 +409,33 @@ test('guests cannot access teams', function () {
     $response = $this->get(route('teams.index'));
 
     $response->assertRedirect(route('login'));
+});
+
+test('team members can be searched and filtered on database', function () {
+    $owner = User::factory()->create(['name' => 'Alice Owner', 'email' => 'alice@example.com']);
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $admin = User::factory()->create(['name' => 'Bob Admin', 'email' => 'bob@example.com']);
+    $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+
+    $response = $this
+        ->actingAs($owner)
+        ->get(route('teams.edit', [$team, 'filter' => ['search' => 'Bob']]));
+
+    $response->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('members.data.0.name', 'Bob Admin')
+            ->has('members.data', 1)
+        );
+
+    $responseRole = $this
+        ->actingAs($owner)
+        ->get(route('teams.edit', [$team, 'filter' => ['role' => TeamRole::Admin->value]]));
+
+    $responseRole->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('members.data.0.name', 'Bob Admin')
+            ->has('members.data', 1)
+        );
 });
