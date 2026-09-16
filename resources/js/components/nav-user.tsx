@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { ChevronsUpDown } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,7 +31,7 @@ export function NavUser() {
                             data-test="sidebar-menu-button"
                         >
                             <UserInfo user={auth.user} team={currentTeam} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <MoreVertical className="ml-auto size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -41,7 +41,7 @@ export function NavUser() {
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'left'
+                                  ? 'right'
                                   : 'bottom'
                         }
                     >

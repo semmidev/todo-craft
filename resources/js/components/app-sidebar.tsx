@@ -1,4 +1,4 @@
-import { Link, usePage } from "@inertiajs/react";
+import { usePage } from "@inertiajs/react";
 import {
     Activity,
     CheckSquare,
@@ -7,18 +7,12 @@ import {
     User,
     Users,
 } from "lucide-react";
-import AppLogo from "@/components/app-logo";
-import { NavFooter } from "@/components/nav-footer";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
 import { dashboard } from "@/routes";
@@ -185,25 +179,12 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboardUrl} onClick={handleLinkClick}>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <NavUser />
             </SidebarHeader>
 
             <SidebarContent>
                 <NavMain items={filteredNavGroups} />
             </SidebarContent>
-
-            <SidebarFooter>
-                <NavFooter items={[]} className="mt-auto" />
-                <NavUser />
-            </SidebarFooter>
         </Sidebar>
     );
 }
